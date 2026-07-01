@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Emers Sandbox &middot; Wholesale Catalog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#14161a; --ink-soft:#3a3f47; --muted:#6b7280;
+    --paper:#eef0f3; --surface:#ffffff; --line:#e2e4e8; --line-strong:#cfd3da;
+    --accent:#1f4dff; --accent-ink:#0f2fb0; --price:#e0442b;
+    --ok:#127a3e; --ok-bg:#e6f4ec; --warn:#8a6d1a; --warn-bg:#fbf3d9;
+    --off:#9aa0aa; --off-bg:#f1f2f5;
+    --shadow:0 1px 2px rgba(20,22,26,.05),0 8px 24px rgba(20,22,26,.06);
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:"Inter",system-ui,sans-serif;font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  .mono{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+  a{color:inherit}
+
+  /* command bar */
+  .cmd{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:22px;padding:12px 26px;background:rgba(20,22,26,.96);color:#f4f5f7;backdrop-filter:saturate(140%) blur(6px)}
+  .wordmark{display:flex;align-items:center;gap:11px;font-family:"Archivo";font-weight:800;letter-spacing:.14em;font-size:14px;text-transform:uppercase}
+  .wordmark .dot{width:11px;height:11px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(31,77,255,.22)}
+  .wordmark small{font-weight:500;letter-spacing:.18em;color:#8b90a0;font-size:11px}
+  .brand-switch{display:flex;gap:4px;margin-left:6px}
+  .brand-switch button{font-family:"Archivo";font-weight:700;letter-spacing:.06em;font-size:12px;text-transform:uppercase;background:transparent;color:#c3c7d2;border:1px solid transparent;border-radius:999px;padding:7px 14px;cursor:pointer;transition:.16s;white-space:nowrap}
+  .brand-switch button:hover{color:#fff;background:rgba(255,255,255,.07)}
+  .brand-switch button.active{background:var(--accent);color:#fff}
+  .brand-switch button:disabled{color:#5c6070;cursor:not-allowed;opacity:.7}
+  .brand-switch button:disabled:hover{background:transparent}
+  .brand-switch button .soon{font-size:9px;letter-spacing:.1em;color:#7d8291;margin-left:6px}
+  .cmd-right{margin-left:auto;display:flex;align-items:center;gap:16px}
+  .acct{display:flex;flex-direction:column;align-items:flex-end;line-height:1.2}
+  .acct b{font-size:12.5px;letter-spacing:.02em}
+  .acct span{font-size:11px;color:#8b90a0}
+  .status-pill{display:flex;align-items:center;gap:7px;font-size:11px;letter-spacing:.04em;color:#c3c7d2}
+  .status-pill i{width:8px;height:8px;border-radius:50%;background:#8b90a0;display:inline-block}
+  .status-pill.live i{background:#42d17a;box-shadow:0 0 0 3px rgba(66,209,122,.2)}
+  .status-pill.err i{background:#ff6a4d;box-shadow:0 0 0 3px rgba(255,106,77,.2)}
+
+  /* brand band */
+  .brand-band{position:relative;overflow:hidden;background:var(--ink);color:#fff}
+  .brand-band .photo{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.62}
+  .brand-band .photo.placeholder{background:radial-gradient(120% 140% at 85% 0%,rgba(31,77,255,.55),transparent 60%),radial-gradient(90% 120% at 0% 100%,rgba(224,68,43,.4),transparent 55%),linear-gradient(120deg,#1a1d24,#0f1116);opacity:1}
+  .brand-band::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(15,17,22,.9) 0%,rgba(15,17,22,.55) 45%,rgba(15,17,22,.15) 100%)}
+  .band-inner{position:relative;z-index:2;max-width:1360px;margin:0 auto;padding:46px 26px 28px}
+  .band-eyebrow{font-family:"IBM Plex Mono";font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:#9fb0ff;margin-bottom:10px}
+  .band-title{font-family:"Archivo";font-weight:800;font-size:clamp(32px,5vw,54px);line-height:.98;letter-spacing:-.01em;margin:0}
+  .band-sub{margin-top:10px;max-width:560px;color:#d7dae2;font-size:14.5px}
+  .photo-hint{position:absolute;z-index:3;right:26px;bottom:20px;display:none;align-items:center;gap:8px;font-family:"IBM Plex Mono";font-size:11px;letter-spacing:.06em;color:#c7ccff;background:rgba(31,77,255,.16);border:1px dashed rgba(159,176,255,.5);padding:7px 12px;border-radius:999px}
+  .brand-band.no-photo .photo-hint{display:flex}
+
+  /* country switcher */
+  .country-rail{position:sticky;top:56px;z-index:40;background:var(--surface);border-bottom:1px solid var(--line)}
+  .country-inner{max-width:1360px;margin:0 auto;padding:0 26px;display:flex;align-items:center;gap:8px;overflow-x:auto}
+  .country{display:flex;align-items:center;gap:9px;padding:14px 4px;margin-right:16px;font-weight:600;font-size:14px;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;transition:.15s}
+  .country .flag{font-size:19px;line-height:1}
+  .country .cnt{font-family:"IBM Plex Mono";font-size:11px;color:var(--off);background:var(--off-bg);border-radius:999px;padding:2px 7px}
+  .country:hover{color:var(--ink)}
+  .country.active{color:var(--ink);border-bottom-color:var(--accent)}
+  .country.active .cnt{color:var(--accent);background:rgba(31,77,255,.1)}
+
+  /* order bar */
+  .order-bar{max-width:1360px;margin:0 auto;padding:20px 26px 4px}
+  .order-fields{display:grid;grid-template-columns:repeat(4,1fr) auto;gap:12px;align-items:end}
+  .fld label{display:block;font-family:"IBM Plex Mono";font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .fld input{width:100%;padding:10px 12px;border:1px solid var(--line-strong);border-radius:9px;background:var(--surface);font:inherit;color:var(--ink)}
+  .fld input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(31,77,255,.14)}
+  .order-readout{display:flex;align-items:stretch;gap:0;border:1px solid var(--line-strong);border-radius:9px;overflow:hidden;background:var(--surface)}
+  .ro-cell{padding:8px 16px;text-align:center;border-right:1px solid var(--line)}
+  .ro-cell:last-child{border-right:none}
+  .ro-cell b{display:block;font-family:"IBM Plex Mono";font-size:18px;font-weight:600;line-height:1.1}
+  .ro-cell span{font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .btn-csv{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border:none;border-radius:9px;background:var(--accent);color:#fff;font:inherit;font-weight:600;font-size:13.5px;cursor:pointer;white-space:nowrap;transition:.15s}
+  .btn-csv:hover{background:var(--accent-ink)}
+  .btn-csv:disabled{background:var(--line-strong);color:#fff;cursor:not-allowed}
+
+  /* category chips */
+  .chip-rail{max-width:1360px;margin:0 auto;padding:16px 26px 0;display:flex;flex-wrap:wrap;gap:8px}
+  .chip{display:inline-flex;align-items:center;gap:8px;padding:8px 13px;border:1px solid var(--line-strong);border-radius:999px;background:var(--surface);font-size:13px;font-weight:600;color:var(--ink-soft);cursor:pointer;transition:.14s}
+  .chip:hover{border-color:var(--accent);color:var(--ink)}
+  .chip.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chip .n{font-family:"IBM Plex Mono";font-size:11px;color:var(--off)}
+  .chip.active .n{color:#aeb4ff}
+
+  /* toolbar */
+  .toolbar{max-width:1360px;margin:0 auto;padding:16px 26px 0;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .search{flex:1;min-width:220px;position:relative}
+  .search input{width:100%;padding:11px 14px 11px 38px;border:1px solid var(--line-strong);border-radius:10px;background:var(--surface);font:inherit;color:var(--ink)}
+  .search input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(31,77,255,.14)}
+  .search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted)}
+  select.filter,input.srp{padding:11px 13px;border:1px solid var(--line-strong);border-radius:10px;background:var(--surface);font:inherit;color:var(--ink)}
+  select.filter{padding-right:34px;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+  input.srp{width:120px}
+  select.filter:focus,input.srp:focus{outline:none;border-color:var(--accent)}
+  .btn-clear-f{padding:11px 14px;border:1px solid var(--line-strong);border-radius:10px;background:var(--surface);font:inherit;font-size:13.5px;color:var(--muted);cursor:pointer}
+  .btn-clear-f:hover{color:var(--ink);border-color:var(--ink-soft)}
+  .result-meta{max-width:1360px;margin:0 auto;padding:14px 26px 0;font-size:13px;color:var(--muted)}
+  .result-meta b{color:var(--ink);font-family:"IBM Plex Mono"}
+
+  /* grid + cards */
+  .grid{max-width:1360px;margin:0 auto;padding:16px 26px 150px;display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:20px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
+  .card-media{position:relative;aspect-ratio:4/3;background:var(--off-bg);display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--line)}
+  .card-media img{width:100%;height:100%;object-fit:cover}
+  .card-media .noimg{display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--off);font-family:"IBM Plex Mono";font-size:11px;letter-spacing:.08em}
+  .badges{position:absolute;top:12px;left:12px;display:flex;gap:6px;flex-wrap:wrap}
+  .badge{font-family:"IBM Plex Mono";font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;background:rgba(20,22,26,.82);color:#fff;padding:4px 8px;border-radius:6px}
+  .card-body{padding:16px 16px 6px;flex:1;display:flex;flex-direction:column}
+  .cat-eyebrow{font-family:"IBM Plex Mono";font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--price);margin-bottom:6px}
+  .style-name{font-family:"Archivo";font-weight:700;font-size:18px;letter-spacing:-.01em;line-height:1.12;margin:0}
+  .sno{font-family:"IBM Plex Mono";font-size:12.5px;color:var(--ink-soft);margin-top:4px}
+
+  .spec{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;margin:14px 0 4px;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .spec .k{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+  .spec .v{font-size:13.5px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:7px}
+  .spec .v.srp{font-family:"IBM Plex Mono";color:var(--ink)}
+  .color-sw{width:12px;height:12px;border-radius:3px;border:1px solid rgba(0,0,0,.15);flex:none}
+
+  .stat{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:12.5px}
+  .stat .d{width:8px;height:8px;border-radius:50%;flex:none}
+  .stat.arr .d{background:var(--ok)} .stat.arr{color:var(--ok)}
+  .stat.trn .d{background:var(--warn)} .stat.trn{color:var(--warn)}
+  .stat.na .d{background:var(--off)} .stat.na{color:var(--off)}
+
+  .sku-head,.sku-row{display:grid;grid-template-columns:42px 58px minmax(0,1fr) auto auto;gap:8px;align-items:center}
+  .sku-head{padding:12px 2px 6px;font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .sku-head .r,.sku-row .r{text-align:right}
+  .sku-row{padding:8px 2px;border-top:1px solid var(--line)}
+  .sku-row .sz{font-family:"IBM Plex Mono";font-weight:600;font-size:13px}
+  .sku-row .st{font-size:10.5px}
+  .sku-row .st .d{width:7px;height:7px}
+  .sku-row .bc{font-family:"IBM Plex Mono";font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sku-row .pr{font-family:"IBM Plex Mono";font-size:12.5px;color:var(--price);text-align:right;white-space:nowrap}
+  .sku-row .pr small{display:block;color:var(--off);font-size:9.5px}
+  .qty{display:flex;align-items:center;border:1px solid var(--line-strong);border-radius:8px;overflow:hidden}
+  .qty button{width:24px;height:28px;border:none;background:var(--off-bg);color:var(--ink);font-size:14px;cursor:pointer}
+  .qty button:hover:not(:disabled){background:var(--line)}
+  .qty button:disabled{color:var(--off);cursor:not-allowed}
+  .qty input{width:36px;height:28px;border:none;text-align:center;font-family:"IBM Plex Mono";font-size:12.5px}
+  .qty input:focus{outline:none}
+  .card-foot{padding:12px 16px;background:#fafbfc;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;font-size:13px}
+  .discount-tag{font-family:"IBM Plex Mono";font-size:10.5px;letter-spacing:.04em;color:var(--ok);background:var(--ok-bg);padding:3px 8px;border-radius:6px;white-space:nowrap}
+  .lt-val{font-family:"IBM Plex Mono";font-weight:600;color:var(--ink)}
+  .lt-label{color:var(--muted)}
+
+  /* sticky summary */
+  .summary{position:fixed;left:0;right:0;bottom:0;z-index:45;background:rgba(20,22,26,.97);color:#fff;transform:translateY(120%);transition:transform .28s cubic-bezier(.2,.8,.2,1)}
+  .summary.show{transform:translateY(0)}
+  .summary-inner{max-width:1360px;margin:0 auto;padding:13px 26px;display:flex;align-items:center;gap:22px}
+  .summary .s-units{font-size:13px;color:#c3c7d2}
+  .summary .s-units b{font-family:"IBM Plex Mono";color:#fff;font-size:16px}
+  .summary .s-total{margin-left:auto;text-align:right}
+  .summary .s-total span{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#8b90a0}
+  .summary .s-total b{font-family:"IBM Plex Mono";font-size:20px;font-weight:600}
+  .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:9px 14px;font:inherit;font-size:13px;cursor:pointer}
+  .btn-ghost:hover{background:rgba(255,255,255,.08)}
+
+  /* states */
+  .state{max-width:640px;margin:70px auto;padding:0 26px;text-align:center;color:var(--muted)}
+  .state h3{font-family:"Archivo";font-weight:700;color:var(--ink);font-size:20px;margin:0 0 8px}
+  .state code{font-family:"IBM Plex Mono";background:var(--off-bg);padding:2px 6px;border-radius:5px;font-size:13px;color:var(--ink-soft)}
+  .state .spinner{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;margin:0 auto 18px;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .state.error h3{color:var(--price)}
+  .load-note{max-width:1360px;margin:0 auto;padding:0 26px}
+  .load-note .warn-box{background:var(--warn-bg);border:1px solid #eadfb0;color:#6a561a;border-radius:10px;padding:11px 15px;font-size:13px;margin-top:12px}
+  .load-note code{font-family:"IBM Plex Mono";background:rgba(0,0,0,.05);padding:1px 5px;border-radius:4px}
+
+  @media (max-width:820px){
+    .order-fields{grid-template-columns:1fr 1fr}
+    .order-readout{grid-column:1/-1;justify-content:center}
+    .btn-csv{grid-column:1/-1;justify-content:center}
+  }
+  @media (max-width:640px){
+    .cmd{gap:12px;padding:10px 16px;flex-wrap:wrap}
+    .acct{display:none}
+    .band-inner{padding:34px 16px 22px}
+    .country-inner,.order-bar,.chip-rail,.toolbar,.result-meta,.grid,.summary-inner,.load-note{padding-left:16px;padding-right:16px}
+    .grid{grid-template-columns:1fr}
+    .order-fields{grid-template-columns:1fr}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;transition-duration:.001ms!important}}
+</style>
+</head>
+<body>
+
+<header class="cmd">
+  <div class="wordmark"><span class="dot"></span>EMERS <small>SANDBOX</small></div>
+  <nav class="brand-switch" id="brandSwitch"></nav>
+  <div class="cmd-right">
+    <div class="acct"><b id="acctName">Altex Mart</b><span id="acctMeta">Wholesale account</span></div>
+    <div class="status-pill" id="statusPill"><i></i><span id="statusText">Connecting</span></div>
+  </div>
+</header>
+
+<section class="brand-band no-photo" id="brandBand">
+  <div class="photo placeholder" id="brandPhoto"></div>
+  <div class="band-inner">
+    <div class="band-eyebrow" id="bandEyebrow">Nike</div>
+    <h1 class="band-title" id="bandTitle">Specialty Sports</h1>
+    <p class="band-sub" id="bandSub">Exclusive specialty sports assortment across Southeast and Northeast Asia. Browse live availability by market.</p>
+  </div>
+  <div class="photo-hint">Set headerImage in CONFIG to place a brand photo here</div>
+</section>
+
+<div class="country-rail"><div class="country-inner" id="countryRail"></div></div>
+
+<!-- ORDER BAR -->
+<div class="order-bar">
+  <div class="order-fields">
+    <div class="fld"><label>Customer</label><input id="ordCustomer" type="text" placeholder="Customer name" /></div>
+    <div class="fld"><label>Company</label><input id="ordCompany" type="text" placeholder="Company" /></div>
+    <div class="fld"><label>Email</label><input id="ordEmail" type="email" placeholder="Email" /></div>
+    <div class="fld"><label>Note</label><input id="ordNote" type="text" placeholder="Optional note" /></div>
+    <div style="display:flex;gap:12px;align-items:end">
+      <div class="order-readout">
+        <div class="ro-cell"><b id="roUnits">0</b><span>Order units</span></div>
+        <div class="ro-cell"><b id="roValue">0</b><span id="roCur">Order value</span></div>
+      </div>
+      <button class="btn-csv" id="csvBtn" disabled>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+        Download order CSV
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY CHIPS -->
+<div class="chip-rail" id="chipRail"></div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="search">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <input id="searchInput" type="text" placeholder="Search product, color, category" />
+  </div>
+  <select class="filter" id="genderFilter"><option value="">All genders</option></select>
+  <select class="filter" id="divFilter"><option value="">All divisions</option></select>
+  <input class="srp mono" id="minSrp" type="number" inputmode="numeric" placeholder="Min SRP" />
+  <input class="srp mono" id="maxSrp" type="number" inputmode="numeric" placeholder="Max SRP" />
+  <select class="filter" id="sortSelect">
+    <option value="name">Sort: Style A to Z</option>
+    <option value="stock">Sort: Most available</option>
+    <option value="price-lo">Sort: Price low to high</option>
+    <option value="price-hi">Sort: Price high to low</option>
+  </select>
+  <button class="btn-clear-f" id="clearFiltersBtn">Clear filters</button>
+</div>
+
+<div class="load-note" id="loadNote"></div>
+<div class="result-meta" id="resultMeta"></div>
+
+<main class="grid" id="grid">
+  <div class="state" style="grid-column:1/-1"><div class="spinner"></div><p>Loading catalog</p></div>
+</main>
+
+<div class="summary" id="summary">
+  <div class="summary-inner">
+    <div class="s-units">Selected <b id="sumUnits">0</b> units across <b id="sumLines">0</b> sizes</div>
+    <button class="btn-ghost" id="clearSelBtn">Clear selection</button>
+    <div class="s-total"><span id="sumCur">VND</span><b id="sumTotal">0</b></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* =========================================================================
+   CONFIG  ----  publishable key is browser safe. NEVER put the secret key here.
+   ========================================================================= */
+const CONFIG = {
+  SUPABASE_URL: "https://qrawstayhwvdebtgvbru.supabase.co",
+  SUPABASE_KEY: "sb_publishable_1UXE6XICF9FaMgPvDjslqQ_AWM_kbuU",
+
+  USE_SIGNIN: true,
+  TEST_EMAIL: "alex_tai@emers.com",
+  TEST_PASSWORD: "test123",
+
+  ACCOUNT_NAME: "Altex Mart",
+  DISCOUNT: 0.50,
+  CUSTOMER_ID: "11111111-1111-1111-1111-111111111111",
+
+  DEFAULT_MARKET: "VN",
+
+  MARKETS: [
+    { code:"VN", name:"Vietnam",    flag:"\u{1F1FB}\u{1F1F3}", currency:"VND", id:"4f5d1af8-9ee2-49b3-8a7d-3095aa164e85" },
+    { code:"TH", name:"Thailand",   flag:"\u{1F1F9}\u{1F1ED}", currency:"THB", id:"150a7b82-fa24-4612-a5a0-55a2f27f8258" },
+    { code:"PH", name:"Philippines",flag:"\u{1F1F5}\u{1F1ED}", currency:"PHP", id:"e299e251-4be6-4ac6-912f-6c08ffce3e61" },
+    { code:"SG", name:"Singapore",  flag:"\u{1F1F8}\u{1F1EC}", currency:"SGD", id:"434a0c8a-8bcd-4131-b553-41b2c7e0b6b2" },
+    { code:"JP", name:"Japan",      flag:"\u{1F1EF}\u{1F1F5}", currency:"JPY", id:"2ebb459c-c1a8-4cfd-90f8-f2b56a0173ac" }
+  ],
+
+  BRANDS: [
+    { code:"APS", label:"Nike Specialty Sports", id:"969a6f64-674f-4e61-ab92-088fc93a19f0", active:true,
+      eyebrow:"Nike", title:"Specialty Sports",
+      sub:"Exclusive specialty sports assortment across Southeast and Northeast Asia. Browse live availability by market.",
+      headerImage:"nike_specialty_header.png" },
+    { code:"KSWISS",  label:"K-Swiss",  id:null, active:false },
+    { code:"CONVERSE",label:"Converse", id:null, active:false }
+  ],
+
+  /* exact table names */
+  TABLES: {
+    products:  ["products"],
+    skus:      ["skus"],
+    prices:    ["sku_prices"],
+    inventory: ["inventory"]
+  }
+};
+
+const CUR_FMT = { USD:{sym:"$",dp:2}, SGD:{sym:"S$",dp:2}, VND:{sym:"\u20AB",dp:0}, THB:{sym:"\u0E3F",dp:2}, PHP:{sym:"\u20B1",dp:2}, JPY:{sym:"\u00A5",dp:0} };
+function fmtMoney(v,cur){ const f=CUR_FMT[cur]||{sym:"",dp:2}; return f.sym+Number(v||0).toLocaleString("en-US",{minimumFractionDigits:f.dp,maximumFractionDigits:f.dp}); }
+function fmtNum(v){ return Number(v||0).toLocaleString("en-US"); }
+
+const pick=(o,keys,dflt=null)=>{ for(const k of keys){ if(o&&o[k]!==undefined&&o[k]!==null&&o[k]!=="") return o[k]; } return dflt; };
+const F={
+  /* products table */
+  pName:  p=>pick(p,["style_name"],"Unnamed style"),
+  pStyle: p=>pick(p,["style_number"],""),
+  pCat:   p=>pick(p,["category"],""),
+  pDiv:   p=>pick(p,["division"],""),
+  pGender:p=>pick(p,["gender"],""),
+  pColor: p=>pick(p,["color"],""),
+  pImg:   p=>pick(p,["image_url","image","photo_url","img"],null),
+  pDesc:  p=>pick(p,["description","desc"],""),
+  pMat:   p=>pick(p,["material"],""),
+  pOrigin:p=>pick(p,["country_of_origin"],""),
+  /* skus table */
+  sSize:  s=>pick(s,["size"],"OS"),
+  sProd:  s=>pick(s,["product_id"],null),
+  sBarcode:s=>pick(s,["barcode"],""),
+  sPo:    s=>pick(s,["po_status"],null),
+  /* sku_prices table */
+  prSku:  r=>pick(r,["sku_id"],null),
+  prCur:  r=>pick(r,["currency"],""),
+  prVal:  r=>Number(pick(r,["srp"],0)),
+  /* inventory table */
+  invSku: r=>pick(r,["sku_id"],null),
+  invMkt: r=>pick(r,["market_id"],null),
+  invAct: r=>Number(pick(r,["actual_qty"],0)),
+  invRes: r=>Number(pick(r,["reserved_qty"],0))
+};
+
+let sb=null;
+let DATA={ products:[], skusByProduct:{}, priceBySku:{}, invBySkuMkt:{}, poBySku:{} };
+let selMarket=CONFIG.DEFAULT_MARKET, selBrand="APS", selCat="";
+const selection={};
+
+document.addEventListener("DOMContentLoaded",init);
+
+async function init(){
+  renderBrandSwitch(); renderCountryRail(); applyBrandBand(); wireControls();
+  if(CONFIG.SUPABASE_URL.includes("YOUR-PROJECT-REF")){
+    setStatus("err","No URL set");
+    showState("error","Add your Project URL","Paste your Supabase Project URL into <code>CONFIG.SUPABASE_URL</code> and reload.");
+    return;
+  }
+  try{ sb=supabase.createClient(CONFIG.SUPABASE_URL,CONFIG.SUPABASE_KEY); }
+  catch(e){ setStatus("err","Client failed"); showState("error","Could not start Supabase client",e.message); return; }
+
+  if(CONFIG.USE_SIGNIN){
+    const {error}=await sb.auth.signInWithPassword({email:CONFIG.TEST_EMAIL,password:CONFIG.TEST_PASSWORD});
+    document.getElementById("acctMeta").textContent = error ? "Not signed in (anon)" : "Signed in \u00b7 wholesale";
+    if(error) console.warn("Sign-in failed, continuing as anon:",error.message);
+  }
+  await loadCatalog();
+}
+
+async function tryTable(names){
+  let lastErr=null;
+  for(const n of names){
+    const r=await sb.from(n).select("*");
+    if(!r.error) return {name:n,data:r.data||[],error:null};
+    lastErr=r.error;
+  }
+  return {name:null,data:[],error:lastErr};
+}
+
+async function loadCatalog(){
+  setStatus("","Loading");
+  const notes=[];
+  const [prod,sku,price,inv]=await Promise.all([
+    tryTable(CONFIG.TABLES.products),
+    tryTable(CONFIG.TABLES.skus),
+    tryTable(CONFIG.TABLES.prices),
+    tryTable(CONFIG.TABLES.inventory)
+  ]);
+
+  if(!prod.name){ setStatus("err","Read error"); showState("error","Could not read products",
+    "None of the product table names worked. Last error:<br><code>"+escapeHtml(prod.error?.message||"unknown")+"</code><br><br>Send me the schema query output and I'll set the exact name."); return; }
+  if(!price.name) notes.push("Pricing table not found (tried "+CONFIG.TABLES.prices.join(", ")+"). Prices show as a dash until the real table name is set.");
+  if(!inv.name)  notes.push("Inventory table not found. Availability and market counts show as zero.");
+
+  let products=prod.data;
+  const brandId=CONFIG.BRANDS.find(b=>b.code===selBrand)?.id;
+  if(brandId && products.length && ("brand_id" in products[0])) products=products.filter(p=>p.brand_id===brandId);
+  DATA.products=products;
+
+  DATA.skusByProduct={}; DATA.poBySku={};
+  for(const s of sku.data){ const pid=F.sProd(s); (DATA.skusByProduct[pid]=DATA.skusByProduct[pid]||[]).push(s); if(F.sPo(s)) DATA.poBySku[s.id]=F.sPo(s); }
+
+  DATA.priceBySku={};
+  for(const r of price.data){ const sid=F.prSku(r); (DATA.priceBySku[sid]=DATA.priceBySku[sid]||{})[F.prCur(r)]=F.prVal(r); }
+
+  DATA.invBySkuMkt={};
+  for(const r of inv.data){ const key=F.invSku(r)+"|"+F.invMkt(r); DATA.invBySkuMkt[key]={actual:F.invAct(r),reserved:F.invRes(r)}; }
+
+  renderLoadNotes(notes);
+  setStatus("live", notes.length?"Live (partial)":"Live");
+  buildFilters(); buildChips(); render();
+}
+
+/* ---------- pricing / stock ---------- */
+function marketObj(code){ return CONFIG.MARKETS.find(m=>m.code===code); }
+function srpFor(skuId){ const mkt=marketObj(selMarket); const p=DATA.priceBySku[skuId]||{}; if(p[mkt.currency]!==undefined) return {v:p[mkt.currency],cur:mkt.currency}; if(p["USD"]!==undefined) return {v:p["USD"],cur:"USD"}; return {v:null,cur:mkt.currency}; }
+function netFor(skuId){ const s=srpFor(skuId); return {v:s.v==null?null:s.v*(1-CONFIG.DISCOUNT),cur:s.cur}; }
+function availFor(skuId){ const r=DATA.invBySkuMkt[skuId+"|"+marketObj(selMarket).id]; return r?Math.max(0,r.actual-r.reserved):0; }
+function poFor(skuId){ const r=DATA.invBySkuMkt[skuId+"|"+marketObj(selMarket).id]; return (r&&r.po)||DATA.poBySku[skuId]||null; }
+function productMinSrp(p){ let m=Infinity; for(const s of (DATA.skusByProduct[p.id]||[])){ const v=srpFor(s.id).v; if(v!=null&&v<m) m=v; } return m===Infinity?null:m; }
+function productStock(p){ return (DATA.skusByProduct[p.id]||[]).reduce((a,s)=>a+availFor(s.id),0); }
+
+/* ---------- filtering ---------- */
+function currentProducts(){
+  const q=(document.getElementById("searchInput").value||"").toLowerCase().trim();
+  const gender=document.getElementById("genderFilter").value;
+  const div=document.getElementById("divFilter").value;
+  const minS=parseFloat(document.getElementById("minSrp").value);
+  const maxS=parseFloat(document.getElementById("maxSrp").value);
+  const sort=document.getElementById("sortSelect").value;
+
+  let list=DATA.products.filter(p=>{
+    if(selCat && F.pCat(p)!==selCat) return false;
+    if(gender && F.pGender(p)!==gender) return false;
+    if(div && F.pDiv(p)!==div) return false;
+    if(!isNaN(minS)||!isNaN(maxS)){ const s=productMinSrp(p); if(s==null) return false; if(!isNaN(minS)&&s<minS) return false; if(!isNaN(maxS)&&s>maxS) return false; }
+    if(q){ const hay=(F.pName(p)+" "+F.pStyle(p)+" "+F.pCat(p)+" "+F.pDesc(p)+" "+F.pColor(p)).toLowerCase(); if(!hay.includes(q)) return false; }
+    return true;
+  });
+
+  const priceOf=p=>{ const v=productMinSrp(p); return v==null?Infinity:v; };
+  if(sort==="name") list.sort((a,b)=>F.pName(a).localeCompare(F.pName(b)));
+  if(sort==="stock") list.sort((a,b)=>productStock(b)-productStock(a));
+  if(sort==="price-lo") list.sort((a,b)=>priceOf(a)-priceOf(b));
+  if(sort==="price-hi") list.sort((a,b)=>priceOf(b)-priceOf(a));
+  return list;
+}
+
+/* ---------- render ---------- */
+function render(){
+  const grid=document.getElementById("grid");
+  const list=currentProducts();
+  const mkt=marketObj(selMarket);
+  const totalUnits=DATA.products.reduce((a,p)=>a+productStock(p),0);
+  document.getElementById("resultMeta").innerHTML=
+    `Showing <b>${list.length}</b> of <b>${DATA.products.length}</b> styles \u00b7 <b>${fmtNum(totalUnits)}</b> units available in ${mkt.flag} ${mkt.name}`;
+
+  if(!list.length){ grid.innerHTML=`<div class="state" style="grid-column:1/-1"><h3>Nothing to show here</h3><p>No styles match this market or filter. Try another country above, or clear filters.</p></div>`; return; }
+  grid.innerHTML=list.map(cardHtml).join("");
+  attachCardEvents(); updateLineTotals(); updateSummary();
+}
+
+const STAT_MAP={ARRIVED:{c:"arr",t:"Arrived",s:"ARR"},IN_TRANSIT:{c:"trn",t:"In transit",s:"TRN"},NOT_ARRIVED:{c:"na",t:"Not arrived",s:"N/A"}};
+function statObj(po){ return STAT_MAP[po]||{c:"na",t:po||"\u2014",s:po?po.slice(0,3):"\u2014"}; }
+
+function cardHtml(p){
+  const skus=(DATA.skusByProduct[p.id]||[]).slice().sort((a,b)=>sizeOrder(F.sSize(a))-sizeOrder(F.sSize(b)));
+  const img=F.pImg(p), cat=F.pCat(p), div=F.pDiv(p), gender=F.pGender(p);
+  const color=F.pColor(p), material=F.pMat(p);
+  const cardPo=poFor((skus[0]||{}).id); const cs=statObj(cardPo);
+  const srp=productMinSrp(p);
+
+  const rows=skus.map(s=>{
+    const av=availFor(s.id), n=netFor(s.id), po=poFor(s.id), st=statObj(po), bc=F.sBarcode(s), q=selection[s.id]||0, out=av<=0;
+    return `<div class="sku-row" data-sku="${s.id}">
+      <span class="sz">${escapeHtml(F.sSize(s))}</span>
+      <span class="stat st ${st.c}" title="${st.t}${av?(' \u00b7 '+av+' avail'):''}"><span class="d"></span>${st.s}</span>
+      <span class="bc" title="${escapeHtml(bc)}">${escapeHtml(bc||"\u2014")}</span>
+      <span class="pr">${n.v==null?"\u2014":fmtMoney(n.v,n.cur)}<small>${out?"0 left":av+" avail"}</small></span>
+      <div class="qty">
+        <button class="q-dec" ${q<=0?"disabled":""}>&minus;</button>
+        <input class="q-in mono" inputmode="numeric" value="${q}" data-max="${av}" ${out?"disabled":""}/>
+        <button class="q-inc" ${(out||q>=av)?"disabled":""}>+</button>
+      </div>
+    </div>`;
+  }).join("");
+
+  return `<article class="card" data-pid="${p.id}">
+    <div class="card-media">
+      ${img?`<img src="${escapeHtml(img)}" alt="${escapeHtml(F.pName(p))}" onerror="this.parentNode.innerHTML='<div class=\\'noimg\\'>NO IMAGE</div>'"/>`
+           :`<div class="noimg"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 15l5-5 4 4 3-3 6 6"/><circle cx="8.5" cy="8.5" r="1.5"/></svg>NO IMAGE</div>`}
+      <div class="badges">${div?`<span class="badge">${escapeHtml(div)}</span>`:""}</div>
+    </div>
+    <div class="card-body">
+      ${cat?`<div class="cat-eyebrow">${escapeHtml(cat)}</div>`:""}
+      <h3 class="style-name">${escapeHtml(F.pName(p))}</h3>
+      ${F.pStyle(p)?`<div class="sno">${escapeHtml(F.pStyle(p))}</div>`:""}
+      <div class="spec">
+        <div><div class="k">Color</div><div class="v">${color?`<span class="color-sw" style="background:${colorSwatch(color)}"></span>${escapeHtml(color)}`:"\u2014"}</div></div>
+        <div><div class="k">SRP</div><div class="v srp">${srp==null?"\u2014":fmtMoney(srp,marketObj(selMarket).currency)}</div></div>
+        <div><div class="k">Status</div><div class="v"><span class="stat ${cs.c}"><span class="d"></span>${cs.t}</span></div></div>
+        <div><div class="k">Material</div><div class="v">${material?escapeHtml(material):"\u2014"}</div></div>
+      </div>
+      <div class="sku-head"><span>Size</span><span>Status</span><span>Barcode</span><span class="r">Your price</span><span class="r">Qty</span></div>
+      ${rows||'<div style="padding:12px 0;color:var(--muted);font-size:13px">No sizes loaded</div>'}
+    </div>
+    <div class="card-foot">
+      <span class="discount-tag">${Math.round(CONFIG.DISCOUNT*100)}% account price</span>
+      <span><span class="lt-label">Line total </span><span class="lt-val" data-lt="${p.id}">${fmtMoney(0,marketObj(selMarket).currency)}</span></span>
+    </div>
+  </article>`;
+}
+
+/* ---------- interactions ---------- */
+function attachCardEvents(){
+  document.querySelectorAll(".sku-row").forEach(row=>{
+    const sku=row.dataset.sku, input=row.querySelector(".q-in"), max=parseInt(input.dataset.max||"0",10);
+    const dec=row.querySelector(".q-dec"), inc=row.querySelector(".q-inc");
+    const set=v=>{ v=Math.max(0,Math.min(max,isNaN(v)?0:v)); if(v>0) selection[sku]=v; else delete selection[sku]; input.value=v; dec.disabled=v<=0; inc.disabled=v>=max; updateLineTotals(); updateSummary(); };
+    dec&&dec.addEventListener("click",()=>set((selection[sku]||0)-1));
+    inc&&inc.addEventListener("click",()=>set((selection[sku]||0)+1));
+    input.addEventListener("input",()=>set(parseInt(input.value.replace(/\D/g,""),10)));
+    input.addEventListener("blur",()=>{ if(input.value==="") set(0); });
+  });
+}
+function updateLineTotals(){
+  document.querySelectorAll("[data-lt]").forEach(el=>{
+    const pid=el.dataset.lt; let total=0,cur=marketObj(selMarket).currency;
+    for(const s of (DATA.skusByProduct[pid]||[])){ const q=selection[s.id]||0; if(q>0){ const n=netFor(s.id); if(n.v!=null){ total+=q*n.v; cur=n.cur; } } }
+    el.textContent=fmtMoney(total,cur);
+  });
+}
+function updateSummary(){
+  let units=0,lines=0,total=0,cur=marketObj(selMarket).currency;
+  for(const sku in selection){ const q=selection[sku]; if(q>0){ units+=q; lines++; const n=netFor(sku); if(n.v!=null){ total+=q*n.v; cur=n.cur; } } }
+  document.getElementById("sumUnits").textContent=fmtNum(units);
+  document.getElementById("sumLines").textContent=lines;
+  document.getElementById("sumCur").textContent=cur;
+  document.getElementById("sumTotal").textContent=fmtMoney(total,cur).replace(CUR_FMT[cur]?.sym||"","");
+  document.getElementById("summary").classList.toggle("show",units>0);
+  document.getElementById("roUnits").textContent=fmtNum(units);
+  document.getElementById("roValue").textContent=fmtMoney(total,cur).replace(CUR_FMT[cur]?.sym||"","");
+  document.getElementById("roCur").textContent="Order value "+cur;
+  document.getElementById("csvBtn").disabled=units<=0;
+}
+
+/* ---------- switchers / controls ---------- */
+function renderBrandSwitch(){
+  document.getElementById("brandSwitch").innerHTML=CONFIG.BRANDS.map(b=>
+    `<button data-brand="${b.code}" class="${b.code===selBrand?"active":""}" ${b.active?"":"disabled"}>${b.label}${b.active?"":'<span class="soon">SOON</span>'}</button>`).join("");
+  document.querySelectorAll("#brandSwitch button[data-brand]").forEach(btn=>{
+    btn.addEventListener("click",()=>{ if(btn.disabled) return; selBrand=btn.dataset.brand; document.querySelectorAll("#brandSwitch button").forEach(x=>x.classList.remove("active")); btn.classList.add("active"); applyBrandBand(); clearSelection(); selCat=""; loadCatalog(); });
+  });
+}
+function renderCountryRail(){
+  document.getElementById("countryRail").innerHTML=CONFIG.MARKETS.map(m=>
+    `<button class="country ${m.code===selMarket?"active":""}" data-mkt="${m.code}"><span class="flag">${m.flag}</span>${m.name}<span class="cnt" data-cnt="${m.code}"></span></button>`).join("");
+  document.querySelectorAll(".country").forEach(btn=>{
+    btn.addEventListener("click",()=>{ selMarket=btn.dataset.mkt; document.querySelectorAll(".country").forEach(x=>x.classList.remove("active")); btn.classList.add("active"); render(); updateMarketCounts(); });
+  });
+}
+function updateMarketCounts(){
+  CONFIG.MARKETS.forEach(m=>{ const el=document.querySelector(`[data-cnt="${m.code}"]`); if(!el) return; let u=0; for(const k in DATA.invBySkuMkt){ if(k.endsWith("|"+m.id)){ const r=DATA.invBySkuMkt[k]; u+=Math.max(0,r.actual-r.reserved); } } el.textContent=fmtNum(u); });
+}
+function applyBrandBand(){
+  const b=CONFIG.BRANDS.find(x=>x.code===selBrand)||CONFIG.BRANDS[0];
+  document.getElementById("bandEyebrow").textContent=b.eyebrow||b.label;
+  document.getElementById("bandTitle").textContent=b.title||b.label;
+  document.getElementById("bandSub").textContent=b.sub||"";
+  const band=document.getElementById("brandBand"), photo=document.getElementById("brandPhoto");
+  if(b.headerImage){ band.classList.remove("no-photo"); photo.classList.remove("placeholder"); photo.style.backgroundImage=`url("${b.headerImage}")`; }
+  else{ band.classList.add("no-photo"); photo.classList.add("placeholder"); photo.style.backgroundImage=""; }
+}
+function buildFilters(){
+  const genders=[...new Set(DATA.products.map(F.pGender).filter(Boolean))].sort();
+  const divs=[...new Set(DATA.products.map(F.pDiv).filter(Boolean))].sort();
+  document.getElementById("genderFilter").innerHTML=`<option value="">All genders</option>`+genders.map(g=>`<option>${escapeHtml(g)}</option>`).join("");
+  document.getElementById("divFilter").innerHTML=`<option value="">All divisions</option>`+divs.map(d=>`<option>${escapeHtml(d)}</option>`).join("");
+  updateMarketCounts();
+}
+function buildChips(){
+  const counts={};
+  for(const p of DATA.products){ const c=F.pCat(p); if(!c) continue; counts[c]=(counts[c]||0)+1; }
+  const cats=Object.keys(counts).sort();
+  const rail=document.getElementById("chipRail");
+  rail.innerHTML=`<button class="chip ${selCat===""?"active":""}" data-cat=""><span>All</span><span class="n">${DATA.products.length}</span></button>`+
+    cats.map(c=>`<button class="chip ${selCat===c?"active":""}" data-cat="${escapeHtml(c)}"><span>${escapeHtml(c)}</span><span class="n">${counts[c]}</span></button>`).join("");
+  rail.querySelectorAll(".chip").forEach(chip=>{
+    chip.addEventListener("click",()=>{ selCat=chip.dataset.cat; rail.querySelectorAll(".chip").forEach(x=>x.classList.remove("active")); chip.classList.add("active"); render(); });
+  });
+}
+function wireControls(){
+  ["searchInput","genderFilter","divFilter","minSrp","maxSrp","sortSelect"].forEach(id=>document.getElementById(id).addEventListener("input",render));
+  document.getElementById("clearSelBtn").addEventListener("click",()=>{ clearSelection(); render(); });
+  document.getElementById("clearFiltersBtn").addEventListener("click",clearFilters);
+  document.getElementById("csvBtn").addEventListener("click",downloadCsv);
+}
+function clearFilters(){
+  document.getElementById("searchInput").value="";
+  document.getElementById("genderFilter").value="";
+  document.getElementById("divFilter").value="";
+  document.getElementById("minSrp").value="";
+  document.getElementById("maxSrp").value="";
+  document.getElementById("sortSelect").value="name";
+  selCat=""; buildChips(); render();
+}
+function clearSelection(){ for(const k in selection) delete selection[k]; }
+
+/* ---------- CSV ---------- */
+function downloadCsv(){
+  const mkt=marketObj(selMarket);
+  const meta={ customer:val("ordCustomer"), company:val("ordCompany"), email:val("ordEmail"), note:val("ordNote") };
+  const rows=[["Customer","Company","Email","Note","Market","Currency","Style No","Style Name","Category","Color","Size","Barcode","Status","SRP","Unit price (net)","Qty","Line total"]];
+  const prodBySku={};
+  for(const p of DATA.products) for(const s of (DATA.skusByProduct[p.id]||[])) prodBySku[s.id]={p,s};
+  let grandUnits=0,grandTotal=0,cur=mkt.currency;
+  for(const sku in selection){ const q=selection[sku]; if(q<=0) continue; const ref=prodBySku[sku]; if(!ref) continue;
+    const {p,s}=ref, srp=srpFor(sku), net=netFor(sku), po=poFor(sku); const line=(net.v||0)*q; grandUnits+=q; grandTotal+=line; cur=net.cur||cur;
+    rows.push([meta.customer,meta.company,meta.email,meta.note,mkt.name,net.cur,F.pStyle(p),F.pName(p),F.pCat(p),F.pColor(p),F.sSize(s),F.sBarcode(s),po||"",srp.v??"",net.v==null?"":net.v.toFixed(CUR_FMT[net.cur]?.dp??2),q,line.toFixed(CUR_FMT[cur]?.dp??2)]);
+  }
+  rows.push([]); rows.push(["","","","","","","","","","","","","","","Total",grandUnits,grandTotal.toFixed(CUR_FMT[cur]?.dp??2)]);
+  const csv=rows.map(r=>r.map(csvCell).join(",")).join("\r\n");
+  const stamp=new Date().toISOString().slice(0,10);
+  const co=(meta.company||meta.customer||"AltexMart").replace(/[^a-z0-9]+/gi,"");
+  triggerDownload(csv,`EmersSandbox_${selBrand}_${mkt.code}_${co}_${stamp}.csv`);
+}
+function val(id){ return (document.getElementById(id).value||"").trim(); }
+function csvCell(v){ const s=String(v==null?"":v); return /[",\r\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; }
+function triggerDownload(text,name){ const blob=new Blob([text],{type:"text/csv;charset=utf-8;"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=name; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); }
+
+/* ---------- helpers ---------- */
+function setStatus(cls,text){ const p=document.getElementById("statusPill"); p.className="status-pill "+(cls||""); document.getElementById("statusText").textContent=text; }
+function showState(kind,title,body){ document.getElementById("grid").innerHTML=`<div class="state ${kind==="error"?"error":""}" style="grid-column:1/-1"><h3>${title}</h3><p>${body}</p></div>`; }
+function renderLoadNotes(notes){ const el=document.getElementById("loadNote"); el.innerHTML=notes.length?`<div class="warn-box">${notes.map(escapeHtml).join("<br>")}</div>`:""; }
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+const SIZE_ORDER={XXS:1,XS:2,S:3,M:4,L:5,XL:6,XXL:7,"2XL":7,XXXL:8,"3XL":8,FREE:98,OS:99,"ONE SIZE":99};
+function sizeOrder(sz){ const k=String(sz).toUpperCase().trim(); if(SIZE_ORDER[k]!==undefined) return SIZE_ORDER[k]; const n=parseFloat(k); return isNaN(n)?50:n; }
+function colorSwatch(name){ const n=String(name).toLowerCase(); const map={black:"#161616",white:"#eceff2",ivory:"#efeadd",red:"#d3312a",blue:"#1f4dff",navy:"#1a2352",grey:"#8b8f96",gray:"#8b8f96",green:"#1f9d55",yellow:"#f2c531",orange:"#f0762b",pink:"#e86aa0",purple:"#7a4fd0",brown:"#7a5230",gold:"#c9a24b"}; for(const k in map){ if(n.includes(k)) return map[k]; } return "#c4c8ce"; }
+</script>
+</body>
+</html>
