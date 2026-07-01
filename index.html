@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -67,23 +66,19 @@
   .country.active{color:var(--ink);border-bottom-color:var(--accent)}
   .country.active .cnt{color:var(--accent);background:rgba(31,77,255,.1)}
 
-  /* order bar */
-  .order-bar{max-width:1360px;margin:0 auto;padding:20px 26px 4px}
-  .order-fields{display:grid;grid-template-columns:repeat(4,1fr) auto;gap:12px;align-items:end}
-  .fld label{display:block;font-family:"IBM Plex Mono";font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
-  .fld input{width:100%;padding:10px 12px;border:1px solid var(--line-strong);border-radius:9px;background:var(--surface);font:inherit;color:var(--ink)}
-  .fld input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(31,77,255,.14)}
-  .order-readout{display:flex;align-items:stretch;gap:0;border:1px solid var(--line-strong);border-radius:9px;overflow:hidden;background:var(--surface)}
-  .ro-cell{padding:8px 16px;text-align:center;border-right:1px solid var(--line)}
-  .ro-cell:last-child{border-right:none}
-  .ro-cell b{display:block;font-family:"IBM Plex Mono";font-size:18px;font-weight:600;line-height:1.1}
-  .ro-cell span{font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-  .btn-csv{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border:none;border-radius:9px;background:var(--accent);color:#fff;font:inherit;font-weight:600;font-size:13.5px;cursor:pointer;white-space:nowrap;transition:.15s}
-  .btn-csv:hover{background:var(--accent-ink)}
-  .btn-csv:disabled{background:var(--line-strong);color:#fff;cursor:not-allowed}
+  /* view toggle */
+  .view-toggle{display:flex;border:1px solid var(--line-strong);border-radius:10px;overflow:hidden}
+  .view-toggle button{padding:10px 14px;border:none;background:var(--surface);color:var(--muted);font:inherit;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}
+  .view-toggle button+button{border-left:1px solid var(--line-strong)}
+  .view-toggle button.active{background:var(--ink);color:#fff}
+  .view-toggle button:hover:not(.active){color:var(--ink)}
+
+  .chk-fld{display:flex;align-items:center;gap:8px;padding:11px 14px;border:1px solid var(--line-strong);border-radius:10px;background:var(--surface);font-size:13.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;user-select:none}
+  .chk-fld input{accent-color:var(--accent);width:15px;height:15px;cursor:pointer}
+  .chk-fld.on{border-color:var(--accent);color:var(--ink)}
 
   /* category chips */
-  .chip-rail{max-width:1360px;margin:0 auto;padding:16px 26px 0;display:flex;flex-wrap:wrap;gap:8px}
+  .chip-rail{max-width:1360px;margin:0 auto;padding:12px 26px 0;display:flex;flex-wrap:wrap;gap:8px}
   .chip{display:inline-flex;align-items:center;gap:8px;padding:8px 13px;border:1px solid var(--line-strong);border-radius:999px;background:var(--surface);font-size:13px;font-weight:600;color:var(--ink-soft);cursor:pointer;transition:.14s}
   .chip:hover{border-color:var(--accent);color:var(--ink)}
   .chip.active{background:var(--ink);color:#fff;border-color:var(--ink)}
@@ -91,7 +86,7 @@
   .chip.active .n{color:#aeb4ff}
 
   /* toolbar */
-  .toolbar{max-width:1360px;margin:0 auto;padding:16px 26px 0;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .toolbar{max-width:1360px;margin:0 auto;padding:10px 26px 0;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
   .search{flex:1;min-width:220px;position:relative}
   .search input{width:100%;padding:11px 14px 11px 38px;border:1px solid var(--line-strong);border-radius:10px;background:var(--surface);font:inherit;color:var(--ink)}
   .search input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(31,77,255,.14)}
@@ -100,25 +95,57 @@
   select.filter{padding-right:34px;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
   input.srp{width:120px}
   select.filter:focus,input.srp:focus{outline:none;border-color:var(--accent)}
+
+  /* SRP dual range slider */
+  .srp-slider{display:flex;align-items:center;gap:12px;padding:9px 16px;border:1px solid var(--line-strong);border-radius:10px;background:var(--surface);min-width:230px}
+  .srp-slider .sl-label{font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+  .sl-track-wrap{position:relative;flex:1;height:20px;display:flex;align-items:center}
+  .sl-track-bg{position:absolute;left:0;right:0;height:4px;border-radius:99px;background:var(--line-strong)}
+  .sl-track-fill{position:absolute;height:4px;border-radius:99px;background:var(--accent)}
+  .sl-track-wrap input[type=range]{position:absolute;left:0;right:0;width:100%;margin:0;-webkit-appearance:none;appearance:none;background:transparent;pointer-events:none;height:20px}
+  .sl-track-wrap input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;pointer-events:auto;width:16px;height:16px;border-radius:50%;background:#fff;border:2.5px solid var(--accent);box-shadow:0 1px 3px rgba(20,22,26,.25);cursor:pointer;margin-top:0}
+  .sl-track-wrap input[type=range]::-moz-range-thumb{pointer-events:auto;width:16px;height:16px;border-radius:50%;background:#fff;border:2.5px solid var(--accent);box-shadow:0 1px 3px rgba(20,22,26,.25);cursor:pointer}
+  .sl-track-wrap input[type=range]::-webkit-slider-runnable-track{-webkit-appearance:none;height:4px;background:transparent}
+  .sl-track-wrap input[type=range]::-moz-range-track{height:4px;background:transparent}
+  .sl-track-wrap input[type=range]:focus{outline:none}
+  .sl-track-wrap input[type=range]:focus::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(31,77,255,.18)}
+  .sl-vals{font-family:"IBM Plex Mono";font-size:11.5px;color:var(--ink-soft);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .sl-vals b{color:var(--ink);font-weight:600}
   .btn-clear-f{padding:11px 14px;border:1px solid var(--line-strong);border-radius:10px;background:var(--surface);font:inherit;font-size:13.5px;color:var(--muted);cursor:pointer}
   .btn-clear-f:hover{color:var(--ink);border-color:var(--ink-soft)}
-  .result-meta{max-width:1360px;margin:0 auto;padding:14px 26px 0;font-size:13px;color:var(--muted)}
+  .result-meta{max-width:1360px;margin:0 auto;padding:10px 26px 0;font-size:13px;color:var(--muted)}
   .result-meta b{color:var(--ink);font-family:"IBM Plex Mono"}
 
   /* grid + cards */
-  .grid{max-width:1360px;margin:0 auto;padding:16px 26px 150px;display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:20px}
+  .grid{max-width:1360px;margin:0 auto;padding:12px 26px 120px;display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+  .grid.compact{grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+  @media (max-width:1180px){ .grid.compact{grid-template-columns:repeat(3,minmax(0,1fr))} }
+  @media (max-width:640px){ .grid.compact{grid-template-columns:1fr} }
   .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
+  .grid.compact .card-media{aspect-ratio:1/1}
+  .grid.compact .card-body{padding:14px 12px 8px;gap:8px}
+  .grid.compact .style-name{font-size:15px;line-height:1.1;margin-bottom:4px}
+  .grid.compact .sno{font-size:10.5px;margin-top:2px;color:var(--muted)}
+  .grid.compact .cat-eyebrow{font-size:9px;margin-bottom:3px}
+  .compact-meta{display:flex;flex-direction:column;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line);text-align:left}
+  .compact-meta .cp{font-family:"IBM Plex Mono";font-size:14px;font-weight:700;color:var(--price);word-break:break-word}
+  .compact-meta .cs{font-size:11px;color:var(--muted)}
+  .btn-expand{width:100%;margin-top:8px;padding:8px 0;border:1px solid var(--line-strong);border-radius:8px;background:var(--off-bg);color:var(--ink-soft);font:inherit;font-size:11.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:.15s}
+  .btn-expand:hover{border-color:var(--ink-soft);color:var(--ink);background:var(--line-strong)}
+  .btn-expand svg{width:11px;height:11px;transition:transform .15s}
+  .btn-expand.open svg{transform:rotate(180deg)}
+  .grid.compact .card-foot{padding:9px 12px;font-size:11px}
   .card-media{position:relative;aspect-ratio:4/3;background:var(--off-bg);display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--line)}
   .card-media img{width:100%;height:100%;object-fit:cover}
   .card-media .noimg{display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--off);font-family:"IBM Plex Mono";font-size:11px;letter-spacing:.08em}
   .badges{position:absolute;top:12px;left:12px;display:flex;gap:6px;flex-wrap:wrap}
   .badge{font-family:"IBM Plex Mono";font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;background:rgba(20,22,26,.82);color:#fff;padding:4px 8px;border-radius:6px}
-  .card-body{padding:16px 16px 6px;flex:1;display:flex;flex-direction:column}
+  .card-body{padding:14px 14px 4px;flex:1;display:flex;flex-direction:column}
   .cat-eyebrow{font-family:"IBM Plex Mono";font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--price);margin-bottom:6px}
   .style-name{font-family:"Archivo";font-weight:700;font-size:18px;letter-spacing:-.01em;line-height:1.12;margin:0}
   .sno{font-family:"IBM Plex Mono";font-size:12.5px;color:var(--ink-soft);margin-top:4px}
 
-  .spec{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;margin:14px 0 4px;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .spec{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;margin:10px 0 2px;padding:10px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
   .spec .k{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
   .spec .v{font-size:13.5px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:7px}
   .spec .v.srp{font-family:"IBM Plex Mono";color:var(--ink)}
@@ -130,17 +157,26 @@
   .stat.trn .d{background:var(--warn)} .stat.trn{color:var(--warn)}
   .stat.na .d{background:var(--off)} .stat.na{color:var(--off)}
 
-  .sku-head,.sku-row{display:grid;grid-template-columns:42px 58px minmax(0,1fr) auto auto;gap:8px;align-items:center}
-  .sku-head{padding:12px 2px 6px;font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .sku-head,.sku-row{display:grid;grid-template-columns:42px 16px 26px 1fr 92px 92px;gap:8px;align-items:center}
+  .sku-head{padding:8px 2px 5px;font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
   .sku-head .r,.sku-row .r{text-align:right}
-  .sku-row{padding:8px 2px;border-top:1px solid var(--line)}
-  .sku-row .sz{font-family:"IBM Plex Mono";font-weight:600;font-size:13px}
-  .sku-row .st{font-size:10.5px}
-  .sku-row .st .d{width:7px;height:7px}
-  .sku-row .bc{font-family:"IBM Plex Mono";font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sku-row{padding:7px 2px;border-top:1px solid var(--line)}
+  .sku-row .sz{font-family:"IBM Plex Mono";font-weight:600;font-size:13px;white-space:nowrap}
+  .sku-row .st{display:flex;justify-content:center}
+  .sku-row .st .d{width:8px;height:8px}
+  .bc-btn{position:relative;width:22px;height:22px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line-strong);border-radius:6px;background:var(--surface);color:var(--muted);cursor:pointer;padding:0;transition:.14s}
+  .bc-btn:hover{color:var(--accent);border-color:var(--accent)}
+  .bc-btn svg{width:12px;height:12px}
+  .bc-btn::after{content:attr(data-tip);position:absolute;left:50%;bottom:calc(100% + 7px);transform:translateX(-50%) translateY(2px);background:var(--ink);color:#fff;font-family:"IBM Plex Mono";font-size:10.5px;white-space:nowrap;padding:5px 8px;border-radius:6px;opacity:0;pointer-events:none;transition:.14s;z-index:5}
+  .bc-btn::before{content:"";position:absolute;left:50%;bottom:calc(100% + 3px);transform:translateX(-50%);border:4px solid transparent;border-top-color:var(--ink);opacity:0;transition:.14s;z-index:5}
+  .bc-btn:hover::after,.bc-btn:hover::before{opacity:1;transform:translateX(-50%) translateY(0)}
+  .bc-btn.copied{color:var(--ok);border-color:var(--ok)}
+  .bc-btn.no-bc{opacity:.35;cursor:default}
+  .bc-btn.no-bc:hover{color:var(--muted);border-color:var(--line-strong)}
+  .bc-btn.no-bc::after,.bc-btn.no-bc::before{display:none}
   .sku-row .pr{font-family:"IBM Plex Mono";font-size:12.5px;color:var(--price);text-align:right;white-space:nowrap}
   .sku-row .pr small{display:block;color:var(--off);font-size:9.5px}
-  .qty{display:flex;align-items:center;border:1px solid var(--line-strong);border-radius:8px;overflow:hidden}
+  .qty{display:flex;align-items:center;border:1px solid var(--line-strong);border-radius:8px;overflow:hidden;justify-self:end}
   .qty button{width:24px;height:28px;border:none;background:var(--off-bg);color:var(--ink);font-size:14px;cursor:pointer}
   .qty button:hover:not(:disabled){background:var(--line)}
   .qty button:disabled{color:var(--off);cursor:not-allowed}
@@ -151,15 +187,21 @@
   .lt-val{font-family:"IBM Plex Mono";font-weight:600;color:var(--ink)}
   .lt-label{color:var(--muted)}
 
-  /* sticky summary */
-  .summary{position:fixed;left:0;right:0;bottom:0;z-index:45;background:rgba(20,22,26,.97);color:#fff;transform:translateY(120%);transition:transform .28s cubic-bezier(.2,.8,.2,1)}
-  .summary.show{transform:translateY(0)}
-  .summary-inner{max-width:1360px;margin:0 auto;padding:13px 26px;display:flex;align-items:center;gap:22px}
-  .summary .s-units{font-size:13px;color:#c3c7d2}
+  /* floating checkout bar */
+  .summary{position:fixed;left:0;right:0;bottom:0;z-index:45;display:flex;justify-content:center;padding:0 26px 22px;pointer-events:none;transform:translateY(140%);opacity:0;transition:transform .32s cubic-bezier(.2,.8,.2,1),opacity .28s}
+  .summary.show{transform:translateY(0);opacity:1}
+  .summary-inner{pointer-events:auto;width:100%;max-width:1360px;background:rgba(20,22,26,.97);backdrop-filter:saturate(160%) blur(12px);-webkit-backdrop-filter:saturate(160%) blur(12px);color:#fff;border-radius:18px;border:1px solid rgba(255,255,255,.08);box-shadow:0 24px 60px rgba(20,22,26,.4),0 4px 16px rgba(20,22,26,.25);padding:16px 22px;display:flex;align-items:center;gap:20px}
+  .summary .s-info{display:flex;align-items:center;gap:16px;flex:1;min-width:0}
+  .summary .s-units{font-size:13px;color:#c3c7d2;white-space:nowrap}
   .summary .s-units b{font-family:"IBM Plex Mono";color:#fff;font-size:16px}
-  .summary .s-total{margin-left:auto;text-align:right}
-  .summary .s-total span{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#8b90a0}
-  .summary .s-total b{font-family:"IBM Plex Mono";font-size:20px;font-weight:600}
+  .summary .s-right{display:flex;align-items:center;gap:18px}
+  .summary .s-total{text-align:right}
+  .summary .s-total span{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#8b90a0}
+  .summary .s-total b{font-family:"IBM Plex Mono";font-size:22px;font-weight:700}
+  .btn-checkout{display:inline-flex;align-items:center;gap:8px;padding:13px 26px;border:none;border-radius:11px;background:var(--accent);color:#fff;font:inherit;font-weight:700;font-size:14px;letter-spacing:.03em;cursor:pointer;transition:.16s;white-space:nowrap}
+  .btn-checkout:hover{background:var(--accent-ink);transform:translateY(-1px)}
+  .btn-checkout:active{transform:translateY(0)}
+  .btn-checkout svg{width:16px;height:16px}
   .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:9px 14px;font:inherit;font-size:13px;cursor:pointer}
   .btn-ghost:hover{background:rgba(255,255,255,.08)}
 
@@ -174,18 +216,17 @@
   .load-note .warn-box{background:var(--warn-bg);border:1px solid #eadfb0;color:#6a561a;border-radius:10px;padding:11px 15px;font-size:13px;margin-top:12px}
   .load-note code{font-family:"IBM Plex Mono";background:rgba(0,0,0,.05);padding:1px 5px;border-radius:4px}
 
-  @media (max-width:820px){
-    .order-fields{grid-template-columns:1fr 1fr}
-    .order-readout{grid-column:1/-1;justify-content:center}
-    .btn-csv{grid-column:1/-1;justify-content:center}
-  }
   @media (max-width:640px){
     .cmd{gap:12px;padding:10px 16px;flex-wrap:wrap}
     .acct{display:none}
     .band-inner{padding:34px 16px 22px}
-    .country-inner,.order-bar,.chip-rail,.toolbar,.result-meta,.grid,.summary-inner,.load-note{padding-left:16px;padding-right:16px}
+    .country-inner,.chip-rail,.toolbar,.result-meta,.grid,.load-note{padding-left:16px;padding-right:16px}
     .grid{grid-template-columns:1fr}
-    .order-fields{grid-template-columns:1fr}
+    .summary{padding:0 12px 14px}
+    .summary-inner{flex-wrap:wrap;border-radius:16px;padding:14px 16px;gap:12px}
+    .summary .s-info{width:100%;justify-content:space-between}
+    .summary .s-right{width:100%;justify-content:space-between}
+    .btn-checkout{flex:1;justify-content:center}
   }
   @media (prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;transition-duration:.001ms!important}}
 </style>
@@ -206,32 +247,12 @@
   <div class="band-inner">
     <div class="band-eyebrow" id="bandEyebrow">Nike</div>
     <h1 class="band-title" id="bandTitle">Specialty Sports</h1>
-    <p class="band-sub" id="bandSub">Exclusive specialty sports assortment across Southeast and Northeast Asia. Browse live availability by market.</p>
+    <p class="band-sub" id="bandSub">Pinnacle footwear and performance apparel.</p>
   </div>
   <div class="photo-hint">Set headerImage in CONFIG to place a brand photo here</div>
 </section>
 
 <div class="country-rail"><div class="country-inner" id="countryRail"></div></div>
-
-<!-- ORDER BAR -->
-<div class="order-bar">
-  <div class="order-fields">
-    <div class="fld"><label>Customer</label><input id="ordCustomer" type="text" placeholder="Customer name" /></div>
-    <div class="fld"><label>Company</label><input id="ordCompany" type="text" placeholder="Company" /></div>
-    <div class="fld"><label>Email</label><input id="ordEmail" type="email" placeholder="Email" /></div>
-    <div class="fld"><label>Note</label><input id="ordNote" type="text" placeholder="Optional note" /></div>
-    <div style="display:flex;gap:12px;align-items:end">
-      <div class="order-readout">
-        <div class="ro-cell"><b id="roUnits">0</b><span>Order units</span></div>
-        <div class="ro-cell"><b id="roValue">0</b><span id="roCur">Order value</span></div>
-      </div>
-      <button class="btn-csv" id="csvBtn" disabled>
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
-        Download order CSV
-      </button>
-    </div>
-  </div>
-</div>
 
 <!-- CATEGORY CHIPS -->
 <div class="chip-rail" id="chipRail"></div>
@@ -243,16 +264,43 @@
     <input id="searchInput" type="text" placeholder="Search product, color, category" />
   </div>
   <select class="filter" id="genderFilter"><option value="">All genders</option></select>
-  <select class="filter" id="divFilter"><option value="">All divisions</option></select>
-  <input class="srp mono" id="minSrp" type="number" inputmode="numeric" placeholder="Min SRP" />
-  <input class="srp mono" id="maxSrp" type="number" inputmode="numeric" placeholder="Max SRP" />
+  <select class="filter" id="divFilter"><option value="">All types</option></select>
+  <select class="filter" id="statusFilter">
+    <option value="">All statuses</option>
+    <option value="ARRIVED">Arrived</option>
+    <option value="IN_TRANSIT">In transit</option>
+    <option value="NOT_ARRIVED">Not arrived</option>
+  </select>
+  <div class="srp-slider">
+    <span class="sl-label">SRP</span>
+    <div class="sl-track-wrap">
+      <div class="sl-track-bg"></div>
+      <div class="sl-track-fill" id="slFill"></div>
+      <input type="range" id="rangeMin" min="0" max="1000" step="1" value="0" />
+      <input type="range" id="rangeMax" min="0" max="1000" step="1" value="1000" />
+    </div>
+    <span class="sl-vals"><b id="slMinLbl">0</b>&ndash;<b id="slMaxLbl">1000</b></span>
+  </div>
+  <input type="hidden" id="minSrp" value="" />
+  <input type="hidden" id="maxSrp" value="" />
   <select class="filter" id="sortSelect">
     <option value="name">Sort: Style A to Z</option>
     <option value="stock">Sort: Most available</option>
     <option value="price-lo">Sort: Price low to high</option>
     <option value="price-hi">Sort: Price high to low</option>
   </select>
+  <label class="chk-fld" id="stockOnlyWrap"><input type="checkbox" id="stockOnly" />In stock only</label>
   <button class="btn-clear-f" id="clearFiltersBtn">Clear filters</button>
+  <div class="view-toggle" id="viewToggle">
+    <button data-view="standard" class="active" title="One detailed card per row">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="7" rx="1"/><rect x="3" y="14" width="18" height="7" rx="1"/></svg>
+      Standard
+    </button>
+    <button data-view="compact" title="Five per row, condensed">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="4" height="18" rx="1"/><rect x="10" y="3" width="4" height="18" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg>
+      Compact
+    </button>
+  </div>
 </div>
 
 <div class="load-note" id="loadNote"></div>
@@ -264,9 +312,17 @@
 
 <div class="summary" id="summary">
   <div class="summary-inner">
-    <div class="s-units">Selected <b id="sumUnits">0</b> units across <b id="sumLines">0</b> sizes</div>
-    <button class="btn-ghost" id="clearSelBtn">Clear selection</button>
-    <div class="s-total"><span id="sumCur">VND</span><b id="sumTotal">0</b></div>
+    <div class="s-info">
+      <div class="s-units">Selected <b id="sumUnits">0</b> units across <b id="sumLines">0</b> sizes, <b id="sumStyles">0</b> styles</div>
+      <button class="btn-ghost" id="clearSelBtn">Clear selection</button>
+    </div>
+    <div class="s-right">
+      <div class="s-total"><span id="sumCur">VND</span><b id="sumTotal">0</b></div>
+      <button class="btn-checkout" id="submitBtn">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+        Submit Order
+      </button>
+    </div>
   </div>
 </div>
 
@@ -300,10 +356,11 @@ const CONFIG = {
   BRANDS: [
     { code:"APS", label:"Nike Specialty Sports", id:"969a6f64-674f-4e61-ab92-088fc93a19f0", active:true,
       eyebrow:"Nike", title:"Specialty Sports",
-      sub:"Exclusive specialty sports assortment across Southeast and Northeast Asia. Browse live availability by market.",
+      sub:"Pinnacle footwear and performance apparel.",
       headerImage:"nike_specialty_header.png" },
     { code:"KSWISS",  label:"K-Swiss",  id:null, active:false },
-    { code:"CONVERSE",label:"Converse", id:null, active:false }
+    { code:"CONVERSE",label:"Converse", id:null, active:false },
+    { code:"SDR",     label:"Sun Day Red", id:null, active:false }
   ],
 
   /* exact table names */
@@ -351,6 +408,9 @@ const F={
 let sb=null;
 let DATA={ products:[], skusByProduct:{}, priceBySku:{}, invBySkuMkt:{}, poBySku:{} };
 let selMarket=CONFIG.DEFAULT_MARKET, selBrand="APS", selCat="";
+let viewMode="standard";
+let sliderBounds={lo:0,hi:1000};
+const expandedCards=new Set();
 const selection={};
 
 document.addEventListener("DOMContentLoaded",init);
@@ -395,8 +455,8 @@ async function loadCatalog(){
 
   if(!prod.name){ setStatus("err","Read error"); showState("error","Could not read products",
     "None of the product table names worked. Last error:<br><code>"+escapeHtml(prod.error?.message||"unknown")+"</code><br><br>Send me the schema query output and I'll set the exact name."); return; }
-  if(!price.name) notes.push("Pricing table not found (tried "+CONFIG.TABLES.prices.join(", ")+"). Prices show as a dash until the real table name is set.");
-  if(!inv.name)  notes.push("Inventory table not found. Availability and market counts show as zero.");
+  if(!price.name) notes.push("Could not read sku_prices ("+(price.error?.message||"unknown error")+"). If the table name is correct, this is usually a missing RLS SELECT policy or a missing GRANT SELECT for the authenticated role. Prices show as a dash until this is fixed.");
+  if(!inv.name)  notes.push("Could not read inventory ("+(inv.error?.message||"unknown error")+"). If the table name is correct, this is usually a missing RLS SELECT policy or a missing GRANT SELECT for the authenticated role. Availability and market counts show as zero until this is fixed.");
 
   let products=prod.data;
   const brandId=CONFIG.BRANDS.find(b=>b.code===selBrand)?.id;
@@ -431,6 +491,8 @@ function currentProducts(){
   const q=(document.getElementById("searchInput").value||"").toLowerCase().trim();
   const gender=document.getElementById("genderFilter").value;
   const div=document.getElementById("divFilter").value;
+  const statusF=document.getElementById("statusFilter").value;
+  const stockOnly=document.getElementById("stockOnly").checked;
   const minS=parseFloat(document.getElementById("minSrp").value);
   const maxS=parseFloat(document.getElementById("maxSrp").value);
   const sort=document.getElementById("sortSelect").value;
@@ -439,6 +501,8 @@ function currentProducts(){
     if(selCat && F.pCat(p)!==selCat) return false;
     if(gender && F.pGender(p)!==gender) return false;
     if(div && F.pDiv(p)!==div) return false;
+    if(stockOnly && productStock(p)<=0) return false;
+    if(statusF){ const skus=DATA.skusByProduct[p.id]||[]; if(!skus.some(s=>poFor(s.id)===statusF)) return false; }
     if(!isNaN(minS)||!isNaN(maxS)){ const s=productMinSrp(p); if(s==null) return false; if(!isNaN(minS)&&s<minS) return false; if(!isNaN(maxS)&&s>maxS) return false; }
     if(q){ const hay=(F.pName(p)+" "+F.pStyle(p)+" "+F.pCat(p)+" "+F.pDesc(p)+" "+F.pColor(p)).toLowerCase(); if(!hay.includes(q)) return false; }
     return true;
@@ -455,6 +519,7 @@ function currentProducts(){
 /* ---------- render ---------- */
 function render(){
   const grid=document.getElementById("grid");
+  grid.classList.toggle("compact",viewMode==="compact");
   const list=currentProducts();
   const mkt=marketObj(selMarket);
   const totalUnits=DATA.products.reduce((a,p)=>a+productStock(p),0);
@@ -471,17 +536,22 @@ function statObj(po){ return STAT_MAP[po]||{c:"na",t:po||"\u2014",s:po?po.slice(
 
 function cardHtml(p){
   const skus=(DATA.skusByProduct[p.id]||[]).slice().sort((a,b)=>sizeOrder(F.sSize(a))-sizeOrder(F.sSize(b)));
-  const img=F.pImg(p), cat=F.pCat(p), div=F.pDiv(p), gender=F.pGender(p);
+  const img=F.pImg(p), cat=F.pCat(p), div=F.pDiv(p);
   const color=F.pColor(p), material=F.pMat(p);
   const cardPo=poFor((skus[0]||{}).id); const cs=statObj(cardPo);
   const srp=productMinSrp(p);
+  const stock=productStock(p);
+  const isCompact=viewMode==="compact";
+  const isOpen=expandedCards.has(p.id);
 
   const rows=skus.map(s=>{
     const av=availFor(s.id), n=netFor(s.id), po=poFor(s.id), st=statObj(po), bc=F.sBarcode(s), q=selection[s.id]||0, out=av<=0;
     return `<div class="sku-row" data-sku="${s.id}">
       <span class="sz">${escapeHtml(F.sSize(s))}</span>
-      <span class="stat st ${st.c}" title="${st.t}${av?(' \u00b7 '+av+' avail'):''}"><span class="d"></span>${st.s}</span>
-      <span class="bc" title="${escapeHtml(bc)}">${escapeHtml(bc||"\u2014")}</span>
+      <span class="stat st ${st.c}" title="${st.t}${av?(' \u00b7 '+av+' avail'):''}"><span class="d"></span></span>
+      ${bc?`<button type="button" class="bc-btn" data-bc="${escapeHtml(bc)}" data-tip="${escapeHtml(bc)}" aria-label="Copy barcode ${escapeHtml(bc)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="2" width="8" height="4" rx="1"/><rect x="6" y="4" width="12" height="18" rx="2"/></svg></button>`
+          :`<span class="bc-btn no-bc" data-tip="No barcode" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="2" width="8" height="4" rx="1"/><rect x="6" y="4" width="12" height="18" rx="2"/></svg></span>`}
+      <span></span>
       <span class="pr">${n.v==null?"\u2014":fmtMoney(n.v,n.cur)}<small>${out?"0 left":av+" avail"}</small></span>
       <div class="qty">
         <button class="q-dec" ${q<=0?"disabled":""}>&minus;</button>
@@ -491,24 +561,49 @@ function cardHtml(p){
     </div>`;
   }).join("");
 
-  return `<article class="card" data-pid="${p.id}">
-    <div class="card-media">
-      ${img?`<img src="${escapeHtml(img)}" alt="${escapeHtml(F.pName(p))}" onerror="this.parentNode.innerHTML='<div class=\\'noimg\\'>NO IMAGE</div>'"/>`
-           :`<div class="noimg"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 15l5-5 4 4 3-3 6 6"/><circle cx="8.5" cy="8.5" r="1.5"/></svg>NO IMAGE</div>`}
-      <div class="badges">${div?`<span class="badge">${escapeHtml(div)}</span>`:""}</div>
-    </div>
-    <div class="card-body">
-      ${cat?`<div class="cat-eyebrow">${escapeHtml(cat)}</div>`:""}
-      <h3 class="style-name">${escapeHtml(F.pName(p))}</h3>
-      ${F.pStyle(p)?`<div class="sno">${escapeHtml(F.pStyle(p))}</div>`:""}
-      <div class="spec">
+  const specBlock=`<div class="spec">
         <div><div class="k">Color</div><div class="v">${color?`<span class="color-sw" style="background:${colorSwatch(color)}"></span>${escapeHtml(color)}`:"\u2014"}</div></div>
         <div><div class="k">SRP</div><div class="v srp">${srp==null?"\u2014":fmtMoney(srp,marketObj(selMarket).currency)}</div></div>
         <div><div class="k">Status</div><div class="v"><span class="stat ${cs.c}"><span class="d"></span>${cs.t}</span></div></div>
         <div><div class="k">Material</div><div class="v">${material?escapeHtml(material):"\u2014"}</div></div>
       </div>
-      <div class="sku-head"><span>Size</span><span>Status</span><span>Barcode</span><span class="r">Your price</span><span class="r">Qty</span></div>
-      ${rows||'<div style="padding:12px 0;color:var(--muted);font-size:13px">No sizes loaded</div>'}
+      <div class="sku-head"><span>Size</span><span></span><span></span><span></span><span class="r">Your price</span><span class="r">Qty</span></div>
+      ${rows||'<div style="padding:12px 0;color:var(--muted);font-size:13px">No sizes loaded</div>'}`;
+
+  const mediaHtml=`<div class="card-media">
+      ${img?`<img src="${escapeHtml(img)}" alt="${escapeHtml(F.pName(p))}" onerror="this.parentNode.innerHTML='<div class=\\'noimg\\'>NO IMAGE</div>'"/>`
+           :`<div class="noimg"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 15l5-5 4 4 3-3 6 6"/><circle cx="8.5" cy="8.5" r="1.5"/></svg>NO IMAGE</div>`}
+      <div class="badges">${div?`<span class="badge">${escapeHtml(div)}</span>`:""}</div>
+    </div>`;
+
+  const nameBlock=`${cat?`<div class="cat-eyebrow">${escapeHtml(cat)}</div>`:""}
+      <h3 class="style-name">${escapeHtml(F.pName(p))}</h3>
+      ${F.pStyle(p)?`<div class="sno">${escapeHtml(F.pStyle(p))}</div>`:""}`;
+
+  if(isCompact && !isOpen){
+    return `<article class="card" data-pid="${p.id}">
+      ${mediaHtml}
+      <div class="card-body">
+        ${nameBlock}
+        <div class="compact-meta">
+          <span class="cp">${srp==null?"\u2014":"From "+fmtMoney(srp*(1-CONFIG.DISCOUNT),marketObj(selMarket).currency)}</span>
+          <span class="cs">${stock>0?fmtNum(stock)+" in stock":"Out of stock"}</span>
+        </div>
+        <button class="btn-expand" data-pid="${p.id}">Sizes &amp; pricing
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+      </div>
+    </article>`;
+  }
+
+  return `<article class="card" data-pid="${p.id}">
+    ${mediaHtml}
+    <div class="card-body">
+      ${nameBlock}
+      ${specBlock}
+      ${isCompact?`<button class="btn-expand open" data-pid="${p.id}">Collapse
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+        </button>`:""}
     </div>
     <div class="card-foot">
       <span class="discount-tag">${Math.round(CONFIG.DISCOUNT*100)}% account price</span>
@@ -519,6 +614,21 @@ function cardHtml(p){
 
 /* ---------- interactions ---------- */
 function attachCardEvents(){
+  document.querySelectorAll(".btn-expand").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      const pid=btn.dataset.pid;
+      if(expandedCards.has(pid)) expandedCards.delete(pid); else expandedCards.add(pid);
+      render();
+    });
+  });
+  document.querySelectorAll(".bc-btn[data-bc]").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      const bc=btn.dataset.bc;
+      const done=()=>{ btn.classList.add("copied"); const prevTip=btn.dataset.tip; btn.dataset.tip="Copied"; setTimeout(()=>{ btn.classList.remove("copied"); btn.dataset.tip=prevTip; },1100); };
+      if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(bc).then(done).catch(done); }
+      else{ const ta=document.createElement("textarea"); ta.value=bc; ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta); ta.select(); try{ document.execCommand("copy"); }catch(e){} document.body.removeChild(ta); done(); }
+    });
+  });
   document.querySelectorAll(".sku-row").forEach(row=>{
     const sku=row.dataset.sku, input=row.querySelector(".q-in"), max=parseInt(input.dataset.max||"0",10);
     const dec=row.querySelector(".q-dec"), inc=row.querySelector(".q-inc");
@@ -539,15 +649,54 @@ function updateLineTotals(){
 function updateSummary(){
   let units=0,lines=0,total=0,cur=marketObj(selMarket).currency;
   for(const sku in selection){ const q=selection[sku]; if(q>0){ units+=q; lines++; const n=netFor(sku); if(n.v!=null){ total+=q*n.v; cur=n.cur; } } }
+  let styles=0;
+  for(const pid in DATA.skusByProduct){ if((DATA.skusByProduct[pid]||[]).some(s=>(selection[s.id]||0)>0)) styles++; }
   document.getElementById("sumUnits").textContent=fmtNum(units);
   document.getElementById("sumLines").textContent=lines;
+  document.getElementById("sumStyles").textContent=styles;
   document.getElementById("sumCur").textContent=cur;
   document.getElementById("sumTotal").textContent=fmtMoney(total,cur).replace(CUR_FMT[cur]?.sym||"","");
   document.getElementById("summary").classList.toggle("show",units>0);
-  document.getElementById("roUnits").textContent=fmtNum(units);
-  document.getElementById("roValue").textContent=fmtMoney(total,cur).replace(CUR_FMT[cur]?.sym||"","");
-  document.getElementById("roCur").textContent="Order value "+cur;
-  document.getElementById("csvBtn").disabled=units<=0;
+}
+
+function setupSrpSlider(){
+  let lo=Infinity,hi=-Infinity;
+  for(const p of DATA.products){ const v=productMinSrp(p); if(v==null) continue; if(v<lo) lo=v; if(v>hi) hi=v; }
+  if(lo===Infinity){ lo=0; hi=1000; }
+  lo=Math.floor(lo); hi=Math.ceil(hi)||1;
+  const step=Math.max(1,Math.round((hi-lo)/200));
+  const rMin=document.getElementById("rangeMin"), rMax=document.getElementById("rangeMax");
+  sliderBounds={lo,hi};
+  rMin.min=lo; rMin.max=hi; rMin.step=step; rMin.value=lo;
+  rMax.min=lo; rMax.max=hi; rMax.step=step; rMax.value=hi;
+  document.getElementById("minSrp").value="";
+  document.getElementById("maxSrp").value="";
+  updateSrpSliderUi();
+}
+function updateSrpSliderUi(){
+  const rMin=document.getElementById("rangeMin"), rMax=document.getElementById("rangeMax");
+  let a=parseFloat(rMin.value), b=parseFloat(rMax.value);
+  if(a>b){ [a,b]=[b,a]; }
+  const lo=parseFloat(rMin.min), hi=parseFloat(rMin.max)||1;
+  const pctA=hi>lo?((a-lo)/(hi-lo))*100:0, pctB=hi>lo?((b-lo)/(hi-lo))*100:100;
+  document.getElementById("slFill").style.left=pctA+"%";
+  document.getElementById("slFill").style.width=Math.max(0,pctB-pctA)+"%";
+  document.getElementById("slMinLbl").textContent=fmtNum(a);
+  document.getElementById("slMaxLbl").textContent=fmtNum(b);
+}
+function wireSrpSlider(){
+  const rMin=document.getElementById("rangeMin"), rMax=document.getElementById("rangeMax");
+  const commit=()=>{
+    let a=parseFloat(rMin.value), b=parseFloat(rMax.value);
+    if(a>b){ const t=rMin.value; rMin.value=rMax.value; rMax.value=t; a=parseFloat(rMin.value); b=parseFloat(rMax.value); }
+    updateSrpSliderUi();
+    const lo=parseFloat(rMin.min), hi=parseFloat(rMin.max);
+    document.getElementById("minSrp").value=(a<=lo)?"":a;
+    document.getElementById("maxSrp").value=(b>=hi)?"":b;
+    render();
+  };
+  rMin.addEventListener("input",commit);
+  rMax.addEventListener("input",commit);
 }
 
 /* ---------- switchers / controls ---------- */
@@ -581,7 +730,8 @@ function buildFilters(){
   const genders=[...new Set(DATA.products.map(F.pGender).filter(Boolean))].sort();
   const divs=[...new Set(DATA.products.map(F.pDiv).filter(Boolean))].sort();
   document.getElementById("genderFilter").innerHTML=`<option value="">All genders</option>`+genders.map(g=>`<option>${escapeHtml(g)}</option>`).join("");
-  document.getElementById("divFilter").innerHTML=`<option value="">All divisions</option>`+divs.map(d=>`<option>${escapeHtml(d)}</option>`).join("");
+  document.getElementById("divFilter").innerHTML=`<option value="">All types</option>`+divs.map(d=>`<option>${escapeHtml(d)}</option>`).join("");
+  setupSrpSlider();
   updateMarketCounts();
 }
 function buildChips(){
@@ -596,43 +746,39 @@ function buildChips(){
   });
 }
 function wireControls(){
-  ["searchInput","genderFilter","divFilter","minSrp","maxSrp","sortSelect"].forEach(id=>document.getElementById(id).addEventListener("input",render));
+  ["searchInput","genderFilter","divFilter","statusFilter","sortSelect"].forEach(id=>document.getElementById(id).addEventListener("input",render));
+  wireSrpSlider();
+  document.getElementById("stockOnly").addEventListener("change",e=>{ document.getElementById("stockOnlyWrap").classList.toggle("on",e.target.checked); render(); });
   document.getElementById("clearSelBtn").addEventListener("click",()=>{ clearSelection(); render(); });
   document.getElementById("clearFiltersBtn").addEventListener("click",clearFilters);
-  document.getElementById("csvBtn").addEventListener("click",downloadCsv);
+  document.getElementById("submitBtn").addEventListener("click",()=>{ onSubmitOrder(); });
+  document.querySelectorAll("#viewToggle button").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      viewMode=btn.dataset.view;
+      document.querySelectorAll("#viewToggle button").forEach(x=>x.classList.remove("active"));
+      btn.classList.add("active");
+      render();
+    });
+  });
 }
 function clearFilters(){
   document.getElementById("searchInput").value="";
   document.getElementById("genderFilter").value="";
   document.getElementById("divFilter").value="";
-  document.getElementById("minSrp").value="";
-  document.getElementById("maxSrp").value="";
+  document.getElementById("statusFilter").value="";
   document.getElementById("sortSelect").value="name";
+  document.getElementById("stockOnly").checked=false;
+  document.getElementById("stockOnlyWrap").classList.remove("on");
+  setupSrpSlider();
   selCat=""; buildChips(); render();
 }
-function clearSelection(){ for(const k in selection) delete selection[k]; }
-
-/* ---------- CSV ---------- */
-function downloadCsv(){
-  const mkt=marketObj(selMarket);
-  const meta={ customer:val("ordCustomer"), company:val("ordCompany"), email:val("ordEmail"), note:val("ordNote") };
-  const rows=[["Customer","Company","Email","Note","Market","Currency","Style No","Style Name","Category","Color","Size","Barcode","Status","SRP","Unit price (net)","Qty","Line total"]];
-  const prodBySku={};
-  for(const p of DATA.products) for(const s of (DATA.skusByProduct[p.id]||[])) prodBySku[s.id]={p,s};
-  let grandUnits=0,grandTotal=0,cur=mkt.currency;
-  for(const sku in selection){ const q=selection[sku]; if(q<=0) continue; const ref=prodBySku[sku]; if(!ref) continue;
-    const {p,s}=ref, srp=srpFor(sku), net=netFor(sku), po=poFor(sku); const line=(net.v||0)*q; grandUnits+=q; grandTotal+=line; cur=net.cur||cur;
-    rows.push([meta.customer,meta.company,meta.email,meta.note,mkt.name,net.cur,F.pStyle(p),F.pName(p),F.pCat(p),F.pColor(p),F.sSize(s),F.sBarcode(s),po||"",srp.v??"",net.v==null?"":net.v.toFixed(CUR_FMT[net.cur]?.dp??2),q,line.toFixed(CUR_FMT[cur]?.dp??2)]);
-  }
-  rows.push([]); rows.push(["","","","","","","","","","","","","","","Total",grandUnits,grandTotal.toFixed(CUR_FMT[cur]?.dp??2)]);
-  const csv=rows.map(r=>r.map(csvCell).join(",")).join("\r\n");
-  const stamp=new Date().toISOString().slice(0,10);
-  const co=(meta.company||meta.customer||"AltexMart").replace(/[^a-z0-9]+/gi,"");
-  triggerDownload(csv,`EmersSandbox_${selBrand}_${mkt.code}_${co}_${stamp}.csv`);
+function onSubmitOrder(){
+  const units=Object.values(selection).reduce((a,q)=>a+(q||0),0);
+  if(units<=0) return;
+  console.log("Submit order with",units,"units. Placeholder: wired for phase 2.");
+  // TODO: wire to order submission API in next phase
 }
-function val(id){ return (document.getElementById(id).value||"").trim(); }
-function csvCell(v){ const s=String(v==null?"":v); return /[",\r\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; }
-function triggerDownload(text,name){ const blob=new Blob([text],{type:"text/csv;charset=utf-8;"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=name; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); }
+function clearSelection(){ for(const k in selection) delete selection[k]; }
 
 /* ---------- helpers ---------- */
 function setStatus(cls,text){ const p=document.getElementById("statusPill"); p.className="status-pill "+(cls||""); document.getElementById("statusText").textContent=text; }
@@ -645,6 +791,3 @@ function colorSwatch(name){ const n=String(name).toLowerCase(); const map={black
 </script>
 </body>
 </html>
-=======
-
->>>>>>> 5380d98e670aea7128b80e161516fe4425f60df6
