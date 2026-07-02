@@ -21,6 +21,7 @@
   html,body{margin:0;padding:0}
   body{background:var(--paper);color:var(--ink);font-family:"Inter",system-ui,sans-serif;font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
   a{color:inherit}
+  .mono{font-family:"IBM Plex Mono",monospace}
 
   .cmd{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:22px;padding:12px 26px;background:rgba(20,22,26,.96);color:#f4f5f7}
   .wordmark{display:flex;align-items:center;gap:11px;font-family:"Archivo";font-weight:800;letter-spacing:.14em;font-size:14px;text-transform:uppercase}
@@ -98,6 +99,7 @@ const CONFIG = {
 
 let sb=null, sbSession=null, myProfile=null;
 let MARKETS=[], BRANDS=[], CUSTOMERS=[], MARKET_ACCESS=[], BRAND_DISCOUNTS=[], LAST_LOGIN={};
+let ORDERS=[], ORDER_ITEMS=[];
 
 document.addEventListener("DOMContentLoaded", boot);
 
@@ -173,17 +175,20 @@ async function renderCustomerSettings(profile){
 
 /* ================= staff / admin view ================= */
 async function loadAdminData(){
-  const [m,b,c,ma,bd,pr,log]=await Promise.all([
+  const [m,b,c,ma,bd,pr,log,ord,oi]=await Promise.all([
     sb.from("markets").select("*"),
     sb.from("brands").select("*"),
     sb.from("customers").select("*").order("created_at",{ascending:false}),
     sb.from("customer_market_access").select("*"),
     sb.from("customer_brand_discounts").select("*"),
     sb.from("profiles").select("id,customer_id"),
-    sb.from("login_access_log").select("profile_id,occurred_at").order("occurred_at",{ascending:false})
+    sb.from("login_access_log").select("profile_id,occurred_at").order("occurred_at",{ascending:false}),
+    sb.from("orders").select("*").order("submitted_at",{ascending:false}),
+    sb.from("order_items").select("*")
   ]);
   MARKETS=m.data||[]; BRANDS=b.data||[]; CUSTOMERS=c.data||[];
   MARKET_ACCESS=ma.data||[]; BRAND_DISCOUNTS=bd.data||[];
+  ORDERS=ord.data||[]; ORDER_ITEMS=oi.data||[];
 
   const profileToCustomer={};
   (pr.data||[]).forEach(p=>{ if(p.customer_id) profileToCustomer[p.id]=p.customer_id; });
@@ -202,18 +207,22 @@ function renderAdmin(){
     <div class="tabs">
       <button class="active" id="tabPending" onclick="switchTab('pending')">Pending applications</button>
       <button id="tabAccounts" onclick="switchTab('accounts')">Accounts</button>
+      <button id="tabOrders" onclick="switchTab('orders')">Orders</button>
     </div>
     <div id="panePending" class="pane active"></div>
     <div id="paneAccounts" class="pane"></div>
+    <div id="paneOrders" class="pane"></div>
   `;
-  renderPending(); renderAccounts();
+  renderPending(); renderAccounts(); renderOrders();
 }
 
 function switchTab(which){
   document.getElementById("tabPending").classList.toggle("active",which==="pending");
   document.getElementById("tabAccounts").classList.toggle("active",which==="accounts");
+  document.getElementById("tabOrders").classList.toggle("active",which==="orders");
   document.getElementById("panePending").classList.toggle("active",which==="pending");
   document.getElementById("paneAccounts").classList.toggle("active",which==="accounts");
+  document.getElementById("paneOrders").classList.toggle("active",which==="orders");
 }
 
 function marketAccessFor(custId){ return MARKET_ACCESS.filter(a=>a.customer_id===custId); }
@@ -320,6 +329,72 @@ async function rejectCustomer(custId){
   if(error){ alert(error.message); return; }
   await loadAdminData();
   renderPending(); renderAccounts();
+}
+
+function renderOrders(){
+  const pending=ORDERS.filter(o=>o.status==="pending");
+  const rest=ORDERS.filter(o=>o.status!=="pending");
+  const el=document.getElementById("paneOrders");
+  const section=(title,list)=> `<div class="section-label">${title}</div>` + (list.length ? list.map(orderCardHtml).join("") : '<div class="empty">None yet.</div>');
+  el.innerHTML = section("Pending review",pending) + section("Reviewed",rest);
+}
+
+function orderCardHtml(o){
+  const cust=CUSTOMERS.find(c=>c.id===o.customer_id);
+  const mkt=MARKETS.find(m=>m.id===o.market_id);
+  const items=ORDER_ITEMS.filter(i=>i.order_id===o.id);
+  const rows=items.map(i=>`<div class="mkt-chk" style="cursor:default"><span class="mono">${escapeHtml(i.style_number||"")}</span>&nbsp;${escapeHtml(i.color||"")} / ${escapeHtml(i.size||"")} &middot; qty ${i.quantity} &middot; net ${i.unit_net!=null?Number(i.unit_net).toFixed(2):"\u2014"}</div>`).join("");
+  const statusLabel=o.status==="pending"?"Pending":(o.status==="approved"?"Approved":"Rejected");
+  return `<div class="card" data-order="${o.id}">
+    <div class="card-top">
+      <div>
+        <div class="card-co">${escapeHtml(cust?cust.company:"Unknown account")}</div>
+        <div class="card-meta">${mkt?mkt.name:""} &middot; ${o.currency} ${Number(o.total_net||0).toLocaleString()} &middot; submitted ${new Date(o.submitted_at).toLocaleString()}</div>
+      </div>
+      <span class="badge ${o.status}">${statusLabel}</span>
+    </div>
+    <div class="section-label">Items</div>
+    <div class="mkt-grid">${rows||'<span class="card-meta">No line items found.</span>'}</div>
+    ${o.status==="pending"?`<div class="row-actions">
+      <button class="btn primary" onclick="approveOrder('${o.id}')">Approve</button>
+      <button class="btn danger" onclick="rejectOrder('${o.id}')">Reject</button>
+    </div>`:""}
+    <div class="save-msg" id="omsg-${o.id}"></div>
+  </div>`;
+}
+
+async function approveOrder(orderId){
+  const msg=document.getElementById("omsg-"+orderId);
+  const o=ORDERS.find(x=>x.id===orderId);
+  const items=ORDER_ITEMS.filter(i=>i.order_id===orderId);
+  if(msg) msg.textContent="Approving...";
+
+  for(const i of items){
+    const {error}=await sb.rpc("fulfill_inventory",{p_sku_id:i.sku_id,p_market_id:o.market_id,p_qty:i.quantity});
+    if(error){ if(msg){ msg.textContent="Error: "+error.message; msg.style.color="#b3271c"; } return; }
+  }
+  const {error:updErr}=await sb.from("orders").update({status:"approved", reviewed_at:new Date().toISOString(), reviewed_by:sbSession.user.id}).eq("id",orderId);
+  if(updErr){ if(msg){ msg.textContent="Error: "+updErr.message; msg.style.color="#b3271c"; } return; }
+
+  await loadAdminData();
+  renderOrders();
+}
+
+async function rejectOrder(orderId){
+  const msg=document.getElementById("omsg-"+orderId);
+  const o=ORDERS.find(x=>x.id===orderId);
+  const items=ORDER_ITEMS.filter(i=>i.order_id===orderId);
+  if(msg) msg.textContent="Rejecting...";
+
+  for(const i of items){
+    const {error}=await sb.rpc("release_inventory",{p_sku_id:i.sku_id,p_market_id:o.market_id,p_qty:i.quantity});
+    if(error){ if(msg){ msg.textContent="Error: "+error.message; msg.style.color="#b3271c"; } return; }
+  }
+  const {error:updErr}=await sb.from("orders").update({status:"rejected", reviewed_at:new Date().toISOString(), reviewed_by:sbSession.user.id}).eq("id",orderId);
+  if(updErr){ if(msg){ msg.textContent="Error: "+updErr.message; msg.style.color="#b3271c"; } return; }
+
+  await loadAdminData();
+  renderOrders();
 }
 
 function escapeHtml(s){ return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }

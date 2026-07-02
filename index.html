@@ -211,6 +211,12 @@
   .btn-checkout:hover{background:var(--accent-ink);transform:translateY(-1px)}
   .btn-checkout:active{transform:translateY(0)}
   .btn-checkout svg{width:16px;height:16px}
+
+  .order-toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:300;display:flex;align-items:center;gap:16px;background:var(--ink);color:#f4f5f7;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.28);padding:14px 16px 14px 20px;max-width:520px}
+  .order-toast-title{font-family:"Archivo";font-weight:700;font-size:13.5px}
+  .order-toast-sub{font-size:12.5px;color:#c3c7d2;margin-top:3px}
+  .order-toast-cancel{flex-shrink:0;background:transparent;border:1px solid #4a4f58;color:#fff;border-radius:8px;padding:9px 14px;font-family:"Archivo";font-weight:700;font-size:12px;text-transform:uppercase;cursor:pointer}
+  .order-toast-cancel:hover{background:#2a2d33}
   .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:9px 14px;font:inherit;font-size:13px;cursor:pointer}
   .btn-ghost:hover{background:rgba(255,255,255,.08)}
 
@@ -412,6 +418,7 @@
 </div><!-- /appRoot -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 /* =========================================================================
    CONFIG  ----  publishable key is browser safe. NEVER put the secret key here.
@@ -496,6 +503,7 @@ const F={
 
 let sb=null;
 let DATA={ products:[], skusByProduct:{}, priceBySku:{}, invBySkuMkt:{}, poBySku:{} };
+let SKU_INDEX={};
 let selMarket=CONFIG.DEFAULT_MARKET, selBrand="APS", selCat="";
 let viewMode="standard";
 let sliderBounds={lo:0,hi:1000};
@@ -722,7 +730,9 @@ async function loadCatalog(){
   DATA.products=products;
 
   DATA.skusByProduct={}; DATA.poBySku={};
+  SKU_INDEX={};
   for(const s of sku.data){ const pid=F.sProd(s); (DATA.skusByProduct[pid]=DATA.skusByProduct[pid]||[]).push(s); if(F.sPo(s)) DATA.poBySku[s.id]=F.sPo(s); }
+  for(const p of products){ for(const s of (DATA.skusByProduct[p.id]||[])){ SKU_INDEX[s.id]={sku:s, product:p}; } }
 
   DATA.priceBySku={};
   for(const r of price.data){ const sid=F.prSku(r); (DATA.priceBySku[sid]=DATA.priceBySku[sid]||{})[F.prCur(r)]=F.prVal(r); }
@@ -1071,11 +1081,144 @@ function clearFilters(){
   setupSrpSlider();
   selCat=""; buildChips(); render();
 }
+function buildCartLines(){
+  const mkt=marketObj(selMarket);
+  const lines=[];
+  for(const sku in selection){
+    const q=selection[sku];
+    if(q<=0) continue;
+    const ref=SKU_INDEX[sku];
+    if(!ref) continue;
+    const srp=srpFor(sku), net=netFor(sku);
+    lines.push({
+      skuId:sku,
+      styleNumber:F.pStyle(ref.product),
+      styleName:F.pName(ref.product),
+      color:F.pColor(ref.product),
+      size:F.sSize(ref.sku),
+      barcode:F.sBarcode(ref.sku),
+      quantity:q,
+      unitSrp:srp.v,
+      unitNet:net.v,
+      currency:net.cur||mkt.currency
+    });
+  }
+  return lines;
+}
+
+let orderCancelTimer=null;
+
 function onSubmitOrder(){
   const units=Object.values(selection).reduce((a,q)=>a+(q||0),0);
   if(units<=0) return;
-  console.log("Submit order with",units,"units. Placeholder: wired for phase 2.");
-  // TODO: wire to order submission API in next phase
+  if(!myProfile){ alert("Sign in to submit an order."); return; }
+  if(myProfile.role==="staff"){ alert("Staff accounts don't place orders."); return; }
+  if(!myCustomer || myCustomer.status!=="approved"){ alert("Your account needs to be approved before you can submit an order."); return; }
+
+  const lines=buildCartLines();
+  if(!lines.length) return;
+  showOrderCancelToast(lines);
+}
+
+function showOrderCancelToast(lines){
+  let seconds=6;
+  const mkt=marketObj(selMarket);
+  const total=lines.reduce((a,l)=>a+(l.unitNet||0)*l.quantity,0);
+
+  const el=document.createElement("div");
+  el.className="order-toast";
+  el.innerHTML=`
+    <div class="order-toast-body">
+      <div class="order-toast-title">Submitting order &middot; ${fmtMoney(total,mkt.currency)}</div>
+      <div class="order-toast-sub">This will hold the stock and send it to Emers for review in <span id="otSecs">${seconds}</span>s.</div>
+    </div>
+    <button class="order-toast-cancel" id="otCancelBtn">Cancel</button>
+  `;
+  document.body.appendChild(el);
+
+  const secEl=el.querySelector("#otSecs");
+  const tick=setInterval(()=>{
+    seconds--;
+    if(secEl) secEl.textContent=seconds;
+    if(seconds<=0) clearInterval(tick);
+  },1000);
+
+  const cleanup=()=>{ clearInterval(tick); if(orderCancelTimer){ clearTimeout(orderCancelTimer); orderCancelTimer=null; } el.remove(); };
+
+  el.querySelector("#otCancelBtn").addEventListener("click",()=>{
+    cleanup();
+  });
+
+  orderCancelTimer=setTimeout(async ()=>{
+    cleanup();
+    await submitOrderNow(lines);
+  },6000);
+}
+
+async function submitOrderNow(lines){
+  const mkt=marketObj(selMarket);
+  const total=lines.reduce((a,l)=>a+(l.unitNet||0)*l.quantity,0);
+
+  const {data:order,error:orderErr}=await sb.from("orders").insert({
+    customer_id:myCustomer.id,
+    market_id:mkt.id,
+    currency:mkt.currency,
+    status:"pending",
+    total_net:total
+  }).select().maybeSingle();
+
+  if(orderErr || !order){ alert("Could not submit order: "+(orderErr?.message||"unknown error")); return; }
+
+  const itemRows=lines.map(l=>({
+    order_id:order.id,
+    sku_id:l.skuId,
+    style_number:l.styleNumber,
+    color:l.color,
+    size:l.size,
+    quantity:l.quantity,
+    unit_srp:l.unitSrp,
+    unit_net:l.unitNet
+  }));
+  const {error:itemsErr}=await sb.from("order_items").insert(itemRows);
+  if(itemsErr){ alert("Order created but line items failed to save: "+itemsErr.message); return; }
+
+  for(const l of lines){
+    const {error:resErr}=await sb.rpc("reserve_inventory",{p_sku_id:l.skuId,p_market_id:mkt.id,p_qty:l.quantity});
+    if(resErr) console.warn("Reserve failed for",l.skuId,resErr.message);
+  }
+
+  generateOrderConfirmationXlsx(order,lines,myCustomer,mkt);
+  clearSelection(); render(); updateSummary();
+  await loadCatalog();
+  alert("Order submitted for review. A confirmation sheet has been downloaded.");
+}
+
+function generateOrderConfirmationXlsx(order,lines,customer,mkt){
+  const rows=lines.map(l=>({
+    "SKU": l.skuId,
+    "Style Number": l.styleNumber,
+    "Style Name": l.styleName,
+    "Color": l.color,
+    "Size": l.size,
+    "Barcode": l.barcode,
+    "Quantity": l.quantity,
+    "Unit Price (SRP)": l.unitSrp,
+    "Unit Cost (Net, after discount)": l.unitNet,
+    "Line Total": l.unitNet!=null ? +(l.unitNet*l.quantity).toFixed(2) : null,
+    "Currency": l.currency
+  }));
+  const total=lines.reduce((a,l)=>a+(l.unitNet||0)*l.quantity,0);
+  rows.push({});
+  rows.push({"SKU":"","Style Number":"","Style Name":"","Color":"","Size":"","Barcode":"","Quantity":"TOTAL","Unit Price (SRP)":"","Unit Cost (Net, after discount)":"","Line Total":+total.toFixed(2),"Currency":mkt.currency});
+
+  const ws=XLSX.utils.json_to_sheet(rows);
+  ws["!cols"]=[{wch:24},{wch:14},{wch:24},{wch:14},{wch:8},{wch:16},{wch:9},{wch:16},{wch:24},{wch:13},{wch:9}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,"Order");
+
+  const dateStr=new Date().toISOString().slice(0,10);
+  const fname=`Order_${customer.company?String(customer.company).replace(/[^a-z0-9]+/gi,"_"):"Customer"}_${mkt.code}_${dateStr}.xlsx`;
+  XLSX.writeFile(wb,fname);
 }
 function clearSelection(){ for(const k in selection) delete selection[k]; }
 
