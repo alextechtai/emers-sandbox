@@ -1158,8 +1158,10 @@ function showOrderCancelToast(lines){
 async function submitOrderNow(lines){
   const mkt=marketObj(selMarket);
   const total=lines.reduce((a,l)=>a+(l.unitNet||0)*l.quantity,0);
+  const orderNumber=generateOrderNumber(mkt);
 
   const {data:order,error:orderErr}=await sb.from("orders").insert({
+    order_number:orderNumber,
     customer_id:myCustomer.id,
     market_id:mkt.id,
     currency:mkt.currency,
@@ -1193,6 +1195,13 @@ async function submitOrderNow(lines){
   alert("Order submitted for review. A confirmation sheet has been downloaded.");
 }
 
+function generateOrderNumber(mkt){
+  const d=new Date();
+  const ymd=d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0");
+  const rand=Math.random().toString(36).slice(2,7).toUpperCase();
+  return `ORD-${mkt.code}-${ymd}-${rand}`;
+}
+
 function generateOrderConfirmationXlsx(order,lines,customer,mkt){
   const rows=lines.map(l=>({
     "SKU": l.skuId,
@@ -1216,8 +1225,7 @@ function generateOrderConfirmationXlsx(order,lines,customer,mkt){
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,"Order");
 
-  const dateStr=new Date().toISOString().slice(0,10);
-  const fname=`Order_${customer.company?String(customer.company).replace(/[^a-z0-9]+/gi,"_"):"Customer"}_${mkt.code}_${dateStr}.xlsx`;
+  const fname=`${order.order_number}_${customer.company?String(customer.company).replace(/[^a-z0-9]+/gi,"_"):"Customer"}.xlsx`;
   XLSX.writeFile(wb,fname);
 }
 function clearSelection(){ for(const k in selection) delete selection[k]; }

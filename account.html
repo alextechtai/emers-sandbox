@@ -183,7 +183,7 @@ async function loadAdminData(){
     sb.from("customer_brand_discounts").select("*"),
     sb.from("profiles").select("id,customer_id"),
     sb.from("login_access_log").select("profile_id,occurred_at").order("occurred_at",{ascending:false}),
-    sb.from("orders").select("*").order("submitted_at",{ascending:false}),
+    sb.from("orders").select("*").order("created_at",{ascending:false}),
     sb.from("order_items").select("*")
   ]);
   MARKETS=m.data||[]; BRANDS=b.data||[]; CUSTOMERS=c.data||[];
@@ -344,12 +344,12 @@ function orderCardHtml(o){
   const mkt=MARKETS.find(m=>m.id===o.market_id);
   const items=ORDER_ITEMS.filter(i=>i.order_id===o.id);
   const rows=items.map(i=>`<div class="mkt-chk" style="cursor:default"><span class="mono">${escapeHtml(i.style_number||"")}</span>&nbsp;${escapeHtml(i.color||"")} / ${escapeHtml(i.size||"")} &middot; qty ${i.quantity} &middot; net ${i.unit_net!=null?Number(i.unit_net).toFixed(2):"\u2014"}</div>`).join("");
-  const statusLabel=o.status==="pending"?"Pending":(o.status==="approved"?"Approved":"Rejected");
+  const statusLabel=o.status==="pending"?"Pending":(o.status==="approved"?"Approved":(o.status==="rejected"?"Rejected":"Cancelled"));
   return `<div class="card" data-order="${o.id}">
     <div class="card-top">
       <div>
-        <div class="card-co">${escapeHtml(cust?cust.company:"Unknown account")}</div>
-        <div class="card-meta">${mkt?mkt.name:""} &middot; ${o.currency} ${Number(o.total_net||0).toLocaleString()} &middot; submitted ${new Date(o.submitted_at).toLocaleString()}</div>
+        <div class="card-co">${escapeHtml(cust?cust.company:"Unknown account")} &middot; <span class="mono">${escapeHtml(o.order_number||"")}</span></div>
+        <div class="card-meta">${mkt?mkt.name:""} &middot; ${o.currency} ${Number(o.total_net||0).toLocaleString()} &middot; submitted ${new Date(o.created_at).toLocaleString()}</div>
       </div>
       <span class="badge ${o.status}">${statusLabel}</span>
     </div>
@@ -373,7 +373,7 @@ async function approveOrder(orderId){
     const {error}=await sb.rpc("fulfill_inventory",{p_sku_id:i.sku_id,p_market_id:o.market_id,p_qty:i.quantity});
     if(error){ if(msg){ msg.textContent="Error: "+error.message; msg.style.color="#b3271c"; } return; }
   }
-  const {error:updErr}=await sb.from("orders").update({status:"approved", reviewed_at:new Date().toISOString(), reviewed_by:sbSession.user.id}).eq("id",orderId);
+  const {error:updErr}=await sb.from("orders").update({status:"approved", decided_at:new Date().toISOString()}).eq("id",orderId);
   if(updErr){ if(msg){ msg.textContent="Error: "+updErr.message; msg.style.color="#b3271c"; } return; }
 
   await loadAdminData();
@@ -390,7 +390,7 @@ async function rejectOrder(orderId){
     const {error}=await sb.rpc("release_inventory",{p_sku_id:i.sku_id,p_market_id:o.market_id,p_qty:i.quantity});
     if(error){ if(msg){ msg.textContent="Error: "+error.message; msg.style.color="#b3271c"; } return; }
   }
-  const {error:updErr}=await sb.from("orders").update({status:"rejected", reviewed_at:new Date().toISOString(), reviewed_by:sbSession.user.id}).eq("id",orderId);
+  const {error:updErr}=await sb.from("orders").update({status:"rejected", decided_at:new Date().toISOString()}).eq("id",orderId);
   if(updErr){ if(msg){ msg.textContent="Error: "+updErr.message; msg.style.color="#b3271c"; } return; }
 
   await loadAdminData();
