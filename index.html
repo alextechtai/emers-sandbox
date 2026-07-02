@@ -1,7 +1,3 @@
----
-layout: null
----
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -41,6 +37,10 @@ layout: null
   .brand-switch button .soon{font-size:9px;letter-spacing:.1em;color:#7d8291;margin-left:6px}
   .cmd-right{margin-left:auto;display:flex;align-items:center;gap:16px}
   .acct{display:flex;flex-direction:column;align-items:flex-end;line-height:1.2}
+  .acct-link{font-size:12.5px;color:#c3c7d2;text-decoration:none;border:1px solid #3a3f47;border-radius:8px;padding:7px 12px}
+  .acct-link:hover{color:#fff}
+  .acct-signout{background:transparent;border:1px solid #3a3f47;color:#c3c7d2;border-radius:8px;padding:7px 12px;font-size:12.5px;cursor:pointer;font-family:"Inter"}
+  .acct-signout:hover{color:#fff}
   .acct b{font-size:12.5px;letter-spacing:.02em}
   .acct span{font-size:11px;color:#8b90a0}
   .status-pill{display:flex;align-items:center;gap:7px;font-size:11px;letter-spacing:.04em;color:#c3c7d2}
@@ -142,6 +142,11 @@ layout: null
   .card-media{position:relative;aspect-ratio:4/3;background:var(--off-bg);display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--line)}
   .card-media img{width:100%;height:100%;object-fit:cover}
   .card-media .noimg{display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--off);font-family:"IBM Plex Mono";font-size:11px;letter-spacing:.08em}
+  .img-nav{position:absolute;top:50%;transform:translateY(-50%);opacity:0;transition:opacity .15s;background:rgba(20,22,26,.55);color:#fff;border:none;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:17px;line-height:1;display:flex;align-items:center;justify-content:center;z-index:5}
+  .img-nav:hover{background:rgba(20,22,26,.8)}
+  .card-media:hover .img-nav{opacity:1}
+  .img-nav.prev{left:8px}
+  .img-nav.next{right:8px}
   .badges{position:absolute;top:12px;left:12px;display:flex;gap:6px;flex-wrap:wrap}
   .badge{font-family:"IBM Plex Mono";font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;background:rgba(20,22,26,.82);color:#fff;padding:4px 8px;border-radius:6px}
   .card-body{padding:14px 14px 4px;flex:1;display:flex;flex-direction:column}
@@ -233,15 +238,88 @@ layout: null
     .btn-checkout{flex:1;justify-content:center}
   }
   @media (prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;transition-duration:.001ms!important}}
+  /* auth gate */
+  .gate{position:fixed;inset:0;z-index:200;background:var(--paper);display:flex;align-items:center;justify-content:center;padding:24px}
+  .gate-card{width:100%;max-width:380px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px 26px 26px}
+  .gate-word{display:flex;align-items:center;gap:11px;font-family:"Archivo";font-weight:800;letter-spacing:.14em;font-size:14px;text-transform:uppercase;color:var(--ink);margin-bottom:22px}
+  .gate-word .dot{width:11px;height:11px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(31,77,255,.16)}
+  .gate-word small{font-weight:500;letter-spacing:.18em;color:var(--muted);font-size:11px}
+  .gate-tabs{display:flex;gap:4px;background:var(--paper);border-radius:10px;padding:4px;margin-bottom:18px}
+  .gate-tab{flex:1;border:none;background:transparent;padding:9px 0;border-radius:8px;font-family:"Archivo";font-weight:700;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);cursor:pointer}
+  .gate-tab.active{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+  .gate-pane{display:none}
+  .gate-pane.active{display:block}
+  .gate-copy{color:var(--muted);font-size:13px;line-height:1.5;margin:0 0 16px}
+  .gate-label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:12px}
+  .gate-label input,.gate-label select{display:block;width:100%;margin-top:6px;padding:10px 11px;border:1px solid var(--line-strong);border-radius:9px;font-family:"Inter";font-size:14px;background:var(--surface);color:var(--ink)}
+  .phone-row{display:flex;gap:6px;margin-top:6px}
+  .phone-row select{width:110px;margin-top:0}
+  .phone-row input{margin-top:0;flex:1}
+  .gate-submit{width:100%;padding:11px 0;border:none;border-radius:9px;background:var(--accent);color:#fff;font-family:"Archivo";font-weight:700;font-size:13px;letter-spacing:.03em;text-transform:uppercase;cursor:pointer;margin-top:4px}
+  .gate-submit:hover{background:var(--accent-ink)}
+  .gate-submit.ghost{background:transparent;color:var(--ink-soft);border:1px solid var(--line-strong)}
+  .gate-msg{margin-top:12px;font-size:12.5px;color:var(--muted);line-height:1.5}
+  .gate-msg.err{color:#b3271c}
+  .gate-msg.ok{color:var(--ok)}
+  #gateWaiting h3{font-family:"Archivo";font-size:16px;margin:0 0 8px}
 </style>
 </head>
 <body>
+
+<!-- ============ AUTH GATE ============ -->
+<div id="authGate" class="gate">
+  <div class="gate-card">
+    <div class="gate-word"><span class="dot"></span>EMERS <small>SANDBOX</small></div>
+
+    <div id="gateLoggedOut">
+      <div class="gate-tabs">
+        <button class="gate-tab active" id="tabLogin" onclick="switchGateTab('login')">Log in</button>
+        <button class="gate-tab" id="tabRequest" onclick="switchGateTab('request')">Request access</button>
+      </div>
+
+      <div id="paneLogin" class="gate-pane active">
+        <p class="gate-copy">Sign in with your email and password.</p>
+        <label class="gate-label">Email<input type="email" id="loginEmail" placeholder="you@company.com" /></label>
+        <label class="gate-label">Password<input type="password" id="loginPassword" placeholder="Enter your password" /></label>
+        <button class="gate-submit" onclick="submitLogin()">Sign in</button>
+        <div class="gate-msg" id="loginMsg"></div>
+      </div>
+
+      <div id="paneRequest" class="gate-pane">
+        <p class="gate-copy">Apply for a wholesale account. We will review and follow up by email. Set a password now, it will be active once your account is approved.</p>
+        <label class="gate-label">Company name<input type="text" id="reqCompany" /></label>
+        <label class="gate-label">Contact name<input type="text" id="reqName" /></label>
+        <label class="gate-label">Email<input type="email" id="reqEmail" /></label>
+        <label class="gate-label">Phone
+          <div class="phone-row">
+            <select id="reqPhoneCountry" class="phone-country"></select>
+            <input type="tel" id="reqPhone" placeholder="Number" />
+          </div>
+        </label>
+        <label class="gate-label">Market<select id="reqMarket"></select></label>
+        <label class="gate-label">Password<input type="password" id="reqPassword" placeholder="At least 8 characters" /></label>
+        <button class="gate-submit" onclick="submitRequest()">Submit request</button>
+        <div class="gate-msg" id="requestMsg"></div>
+      </div>
+    </div>
+
+    <div id="gateWaiting" class="gate-pane">
+      <h3 id="gateWaitTitle">Request submitted</h3>
+      <p class="gate-copy" id="gateWaitBody"></p>
+      <button class="gate-submit ghost" onclick="signOutGate()">Back to sign in</button>
+    </div>
+  </div>
+</div>
+
+<div id="appRoot" style="display:none">
 
 <header class="cmd">
   <div class="wordmark"><span class="dot"></span>EMERS <small>SANDBOX</small></div>
   <nav class="brand-switch" id="brandSwitch"></nav>
   <div class="cmd-right">
     <div class="acct"><b id="acctName">Altex Mart</b><span id="acctMeta">Wholesale account</span></div>
+    <a class="acct-link" id="acctLink" href="account.html" style="display:none">Account</a>
+    <button class="acct-signout" id="acctSignoutBtn" onclick="signOutGate()" style="display:none">Sign out</button>
     <div class="status-pill" id="statusPill"><i></i><span id="statusText">Connecting</span></div>
   </div>
 </header>
@@ -330,6 +408,8 @@ layout: null
   </div>
 </div>
 
+</div><!-- /appRoot -->
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* =========================================================================
@@ -338,14 +418,6 @@ layout: null
 const CONFIG = {
   SUPABASE_URL: "https://qrawstayhwvdebtgvbru.supabase.co",
   SUPABASE_KEY: "sb_publishable_1UXE6XICF9FaMgPvDjslqQ_AWM_kbuU",
-
-  USE_SIGNIN: true,
-  TEST_EMAIL: "alex_tai@emers.com",
-  TEST_PASSWORD: "test123",
-
-  ACCOUNT_NAME: "Altex Mart",
-  DISCOUNT: 0.50,
-  CUSTOMER_ID: "11111111-1111-1111-1111-111111111111",
 
   DEFAULT_MARKET: "VN",
 
@@ -389,10 +461,16 @@ const F={
   pDiv:   p=>pick(p,["division"],""),
   pGender:p=>pick(p,["gender"],""),
   pColor: p=>pick(p,["color"],""),
-  pImg:   p=>pick(p,["image_url","image","photo_url","img"],null),
+ // Looks for the image_urls array column first, falling back to older single string column names
+  pImgs:  p=> {
+    if (p && Array.isArray(p.image_urls)) return p.image_urls;
+    const single = pick(p,["image_url","image","photo_url","img"],null);
+    return single ? [single] : [];
+  },
   pDesc:  p=>pick(p,["description","desc"],""),
   pMat:   p=>pick(p,["material"],""),
   pOrigin:p=>pick(p,["country_of_origin"],""),
+  pColorCode:p=>pick(p,["color_code"],""),
   /* skus table */
   sSize:  s=>pick(s,["size"],"OS"),
   sProd:  s=>pick(s,["product_id"],null),
@@ -417,24 +495,184 @@ let sliderBounds={lo:0,hi:1000};
 const expandedCards=new Set();
 const selection={};
 
-document.addEventListener("DOMContentLoaded",init);
+let sbSession=null, myProfile=null, myCustomer=null, myMarketAccess=[], myBrandDiscounts=[];
 
-async function init(){
+const PHONE_COUNTRIES=[
+  {code:"VN",dial:"+84"},{code:"TH",dial:"+66"},{code:"PH",dial:"+63"},
+  {code:"SG",dial:"+65"},{code:"JP",dial:"+81"},{code:"TW",dial:"+886"}
+];
+
+document.addEventListener("DOMContentLoaded",boot);
+
+async function boot(){
   renderBrandSwitch(); renderCountryRail(); applyBrandBand(); wireControls();
+  populateGateSelectors();
   if(CONFIG.SUPABASE_URL.includes("YOUR-PROJECT-REF")){
-    setStatus("err","No URL set");
-    showState("error","Add your Project URL","Paste your Supabase Project URL into <code>CONFIG.SUPABASE_URL</code> and reload.");
+    showGateMessage("loginMsg","Add your Supabase Project URL to CONFIG.SUPABASE_URL.","err");
     return;
   }
   try{ sb=supabase.createClient(CONFIG.SUPABASE_URL,CONFIG.SUPABASE_KEY); }
-  catch(e){ setStatus("err","Client failed"); showState("error","Could not start Supabase client",e.message); return; }
+  catch(e){ showGateMessage("loginMsg","Could not start Supabase client: "+e.message,"err"); return; }
 
-  if(CONFIG.USE_SIGNIN){
-    const {error}=await sb.auth.signInWithPassword({email:CONFIG.TEST_EMAIL,password:CONFIG.TEST_PASSWORD});
-    document.getElementById("acctMeta").textContent = error ? "Not signed in (anon)" : "Signed in \u00b7 wholesale";
-    if(error) console.warn("Sign-in failed, continuing as anon:",error.message);
+  sb.auth.onAuthStateChange((_evt,session)=>{ sbSession=session; if(session) resolveAccount(); });
+
+  const {data:{session}}=await sb.auth.getSession();
+  sbSession=session;
+  if(session){ await resolveAccount(); } else { showGate("loggedOut"); }
+}
+
+function populateGateSelectors(){
+  document.getElementById("authGate").addEventListener("keydown",e=>{
+    if(e.key!=="Enter") return;
+    if(e.target.closest("#paneLogin")){ e.preventDefault(); submitLogin(); }
+    else if(e.target.closest("#paneRequest")){ e.preventDefault(); submitRequest(); }
+  });
+  const mSel=document.getElementById("reqMarket");
+  mSel.innerHTML=CONFIG.MARKETS.map(m=>`<option value="${m.id}">${m.flag} ${m.name}</option>`).join("");
+  const pSel=document.getElementById("reqPhoneCountry");
+  pSel.innerHTML=PHONE_COUNTRIES.map(c=>`<option value="${c.dial}">${c.code} ${c.dial}</option>`).join("");
+}
+
+function switchGateTab(which){
+  document.getElementById("tabLogin").classList.toggle("active",which==="login");
+  document.getElementById("tabRequest").classList.toggle("active",which==="request");
+  document.getElementById("paneLogin").classList.toggle("active",which==="login");
+  document.getElementById("paneRequest").classList.toggle("active",which==="request");
+}
+
+function showGateMessage(id,text,cls){
+  const el=document.getElementById(id);
+  el.textContent=text; el.className="gate-msg"+(cls?" "+cls:"");
+}
+
+function showGate(kind,title,body){
+  document.getElementById("appRoot").style.display="none";
+  document.getElementById("authGate").style.display="flex";
+  document.getElementById("gateLoggedOut").style.display= kind==="loggedOut" ? "block":"none";
+  document.getElementById("gateWaiting").classList.toggle("active", kind!=="loggedOut");
+  if(kind!=="loggedOut"){
+    document.getElementById("gateWaitTitle").textContent=title||"";
+    document.getElementById("gateWaitBody").textContent=body||"";
   }
-  await loadCatalog();
+}
+
+async function submitLogin(){
+  const email=document.getElementById("loginEmail").value.trim();
+  const password=document.getElementById("loginPassword").value;
+  if(!email||!password){ showGateMessage("loginMsg","Enter your email and password.","err"); return; }
+  showGateMessage("loginMsg","Signing in...");
+  const {error}=await sb.auth.signInWithPassword({email,password});
+  if(error){ showGateMessage("loginMsg",error.message,"err"); return; }
+  showGateMessage("loginMsg","");
+}
+
+async function submitRequest(){
+  const company=document.getElementById("reqCompany").value.trim();
+  const name=document.getElementById("reqName").value.trim();
+  const email=document.getElementById("reqEmail").value.trim();
+  const dial=document.getElementById("reqPhoneCountry").value;
+  const phoneNum=document.getElementById("reqPhone").value.trim();
+  const marketId=document.getElementById("reqMarket").value;
+  const password=document.getElementById("reqPassword").value;
+  if(!company||!name||!email||!phoneNum||!password){ showGateMessage("requestMsg","Please fill in every field.","err"); return; }
+  if(password.length<8){ showGateMessage("requestMsg","Password needs to be at least 8 characters.","err"); return; }
+  showGateMessage("requestMsg","Submitting...");
+
+  const {error:custErr}=await sb.from("customers").insert({
+    company, name, contact_email:email, phone:dial+" "+phoneNum,
+    requested_market_id:marketId, status:"pending"
+  });
+  if(custErr){ showGateMessage("requestMsg",custErr.message,"err"); return; }
+
+  const {data:signUpData,error:signUpErr}=await sb.auth.signUp({email,password});
+  if(signUpErr){ showGateMessage("requestMsg","Your application was saved, but account creation failed: "+signUpErr.message+". Contact Emers to finish setup.","err"); return; }
+
+  if(signUpData.session){
+    showGate("waiting","Request submitted","Thanks, "+name+". We have your application for "+company+" and will notify you once it has been reviewed.");
+  } else {
+    showGate("waiting","Confirm your email","Thanks, "+name+". Check "+email+" for a confirmation link, then sign in with your password once we have approved "+company+".");
+  }
+}
+
+async function signOutGate(){
+  await sb.auth.signOut();
+  sbSession=null; myProfile=null; myCustomer=null;
+  document.getElementById("loginEmail").value="";
+  document.getElementById("loginPassword").value="";
+  document.getElementById("acctLink").style.display="none";
+  document.getElementById("acctSignoutBtn").style.display="none";
+  showGate("loggedOut");
+}
+
+async function resolveAccount(){
+  const user=sbSession.user;
+  let {data:profile}=await sb.from("profiles").select("*").eq("id",user.id).maybeSingle();
+
+  if(!profile){
+    const {data:cust}=await sb.from("customers").select("*").eq("contact_email",user.email).maybeSingle();
+    if(!cust){
+      showGate("waiting","No matching account","We could not find a wholesale application for "+user.email+". Use Request access first, or check you signed in with the same email.");
+      return;
+    }
+    const {data:created,error:insErr}=await sb.from("profiles").insert({id:user.id,role:"customer",customer_id:cust.id,full_name:cust.name}).select().maybeSingle();
+    if(insErr){ showGate("waiting","Could not link account",insErr.message); return; }
+    profile=created;
+  }
+  myProfile=profile;
+
+  if(profile.role==="staff"){
+    document.getElementById("acctName").textContent="Emers staff";
+    document.getElementById("acctMeta").textContent="Signed in \u00b7 staff";
+    myCustomer=null; myMarketAccess=[]; myBrandDiscounts=[];
+    enterApp();
+    return;
+  }
+
+  const {data:cust}=await sb.from("customers").select("*").eq("id",profile.customer_id).maybeSingle();
+  myCustomer=cust;
+
+  if(!cust || cust.status==="pending"){
+    showGate("waiting","Application pending","Your wholesale account for "+(cust?cust.company:"")+" is still being reviewed. We will notify you once it is approved.");
+    return;
+  }
+  if(cust.status==="rejected"){
+    showGate("waiting","Application not approved","This application was not approved. Contact Emers if you believe this is a mistake.");
+    return;
+  }
+
+  const [{data:markets},{data:discounts}]=await Promise.all([
+    sb.from("customer_market_access").select("*").eq("customer_id",cust.id),
+    sb.from("customer_brand_discounts").select("*").eq("customer_id",cust.id)
+  ]);
+  myMarketAccess=markets||[];
+  myBrandDiscounts=discounts||[];
+
+  if(!myMarketAccess.length){
+    showGate("waiting","No markets assigned","Your account is approved but has no markets assigned yet. Contact Emers to finish setup.");
+    return;
+  }
+
+  document.getElementById("acctName").textContent=cust.company||cust.name;
+  document.getElementById("acctMeta").textContent="Signed in \u00b7 wholesale";
+  enterApp();
+}
+
+function enterApp(){
+  document.getElementById("authGate").style.display="none";
+  document.getElementById("appRoot").style.display="block";
+  document.getElementById("acctLink").style.display="inline-block";
+  document.getElementById("acctSignoutBtn").style.display="inline-block";
+  renderCountryRail();
+  const allowedCodes=myMarketAccess.length? CONFIG.MARKETS.filter(m=>myMarketAccess.some(a=>a.market_id===m.id)).map(m=>m.code) : CONFIG.MARKETS.map(m=>m.code);
+  if(!allowedCodes.includes(selMarket)) selMarket=allowedCodes[0];
+  loadCatalog();
+}
+
+function currentBrandDiscount(){
+  const brandId=CONFIG.BRANDS.find(b=>b.code===selBrand)?.id;
+  if(myProfile && myProfile.role==="staff") return 0;
+  const row=myBrandDiscounts.find(d=>d.brand_id===brandId);
+  return row ? Number(row.discount_percent)/100 : 0;
 }
 
 async function tryTable(names){
@@ -484,7 +722,7 @@ async function loadCatalog(){
 /* ---------- pricing / stock ---------- */
 function marketObj(code){ return CONFIG.MARKETS.find(m=>m.code===code); }
 function srpFor(skuId){ const mkt=marketObj(selMarket); const p=DATA.priceBySku[skuId]||{}; if(p[mkt.currency]!==undefined) return {v:p[mkt.currency],cur:mkt.currency}; if(p["USD"]!==undefined) return {v:p["USD"],cur:"USD"}; return {v:null,cur:mkt.currency}; }
-function netFor(skuId){ const s=srpFor(skuId); return {v:s.v==null?null:s.v*(1-CONFIG.DISCOUNT),cur:s.cur}; }
+function netFor(skuId){ const s=srpFor(skuId); return {v:s.v==null?null:s.v*(1-currentBrandDiscount()),cur:s.cur}; }
 function availFor(skuId){ const r=DATA.invBySkuMkt[skuId+"|"+marketObj(selMarket).id]; return r?Math.max(0,r.actual-r.reserved):0; }
 function poFor(skuId){ const r=DATA.invBySkuMkt[skuId+"|"+marketObj(selMarket).id]; return (r&&r.po)||DATA.poBySku[skuId]||null; }
 function productMinSrp(p){ let m=Infinity; for(const s of (DATA.skusByProduct[p.id]||[])){ const v=srpFor(s.id).v; if(v!=null&&v<m) m=v; } return m===Infinity?null:m; }
@@ -540,7 +778,24 @@ function statObj(po){ return STAT_MAP[po]||{c:"na",t:po||"\u2014",s:po?po.slice(
 
 function cardHtml(p){
   const skus=(DATA.skusByProduct[p.id]||[]).slice().sort((a,b)=>sizeOrder(F.sSize(a))-sizeOrder(F.sSize(b)));
-  const img=F.pImg(p), cat=F.pCat(p), div=F.pDiv(p);
+  const imgs = F.pImgs(p), cat = F.pCat(p), div = F.pDiv(p);
+  // Only use images whose filename actually starts with this product's style number,
+  // in case image_urls ever picks up something that doesn't belong to this row.
+  // If more than one product shares this style number, also require the color code,
+  // since the filename alone can't tell two colorways apart in that case.
+  const sameStyleCount = DATA.products.filter(x => F.pStyle(x) === F.pStyle(p)).length;
+  const validImgs = imgs.filter(url => {
+    const fname = url.split('/').pop();
+    if (sameStyleCount > 1 && F.pColorCode(p)) {
+      // Style and color code may be joined with nothing, an underscore, or a dash
+      // depending on which export batch a photo came from
+      return [F.pStyle(p)+F.pColorCode(p), F.pStyle(p)+"_"+F.pColorCode(p), F.pStyle(p)+"-"+F.pColorCode(p)]
+        .some(prefix => fname.startsWith(prefix));
+    }
+    return fname.startsWith(F.pStyle(p));
+  });
+  const mainImg = validImgs.length > 0 ? validImgs[0] : null;
+  const galleryJson = escapeHtml(JSON.stringify(validImgs));
   const color=F.pColor(p), material=F.pMat(p);
   const cardPo=poFor((skus[0]||{}).id); const cs=statObj(cardPo);
   const srp=productMinSrp(p);
@@ -574,10 +829,29 @@ function cardHtml(p){
       <div class="sku-head"><span>Size</span><span></span><span></span><span></span><span class="r">Your price</span><span class="r">Qty</span></div>
       ${rows||'<div style="padding:12px 0;color:var(--muted);font-size:13px">No sizes loaded</div>'}`;
 
-  const mediaHtml=`<div class="card-media">
-      ${img?`<img src="${escapeHtml(img)}" alt="${escapeHtml(F.pName(p))}" onerror="this.parentNode.innerHTML='<div class=\\'noimg\\'>NO IMAGE</div>'"/>`
-           :`<div class="noimg"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 15l5-5 4 4 3-3 6 6"/><circle cx="8.5" cy="8.5" r="1.5"/></svg>NO IMAGE</div>`}
-      <div class="badges">${div?`<span class="badge">${escapeHtml(div)}</span>`:""}</div>
+  // Map your array into a quick thumbnail tray layout
+const thumbTrayHtml = validImgs.length > 1 ? `
+  <div class="thumb-tray" style="display:flex; gap:4px; padding:6px; background:var(--surface); border-top:1px solid var(--line); overflow-x:auto;">
+    ${validImgs.map((url,i) => `
+        <img src="${escapeHtml(url)}" class="thumb" data-idx="${i}" style="width:40px; height:40px; object-fit:cover; border-radius:4px; cursor:pointer; border:1px solid var(--line);"
+          onclick="setCardImg(this.closest('.card-media-wrapper'),${i})" />
+      `).join('')}
+  </div>
+` : '';
+
+  const arrowsHtml = validImgs.length > 1 ? `
+    <button type="button" class="img-nav prev" aria-label="Previous photo" onclick="stepCardImg(this,-1)">&lsaquo;</button>
+    <button type="button" class="img-nav next" aria-label="Next photo" onclick="stepCardImg(this,1)">&rsaquo;</button>
+  ` : '';
+
+  const mediaHtml=`<div class="card-media-wrapper" style="display:flex; flex-direction:column;" data-images="${galleryJson}">
+      <div class="card-media" style="position:relative;">
+        ${mainImg?`<img src="${escapeHtml(mainImg)}" class="main-card-photo" data-idx="0" alt="${escapeHtml(F.pName(p))}" onerror="this.parentNode.innerHTML='<div class=\\'noimg\\'>NO IMAGE</div>'"/>`
+                 :`<div class="noimg"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 15l5-5 4 4 3-3 6 6"/><circle cx="8.5" cy="8.5" r="1.5"/></svg>NO IMAGE</div>`}
+        ${arrowsHtml}
+        <div class="badges">${div?`<span class="badge">${escapeHtml(div)}</span>`:""}</div>
+      </div>
+      ${thumbTrayHtml}
     </div>`;
 
   const nameBlock=`${cat?`<div class="cat-eyebrow">${escapeHtml(cat)}</div>`:""}
@@ -590,7 +864,7 @@ function cardHtml(p){
       <div class="card-body">
         ${nameBlock}
         <div class="compact-meta">
-          <span class="cp">${srp==null?"\u2014":"From "+fmtMoney(srp*(1-CONFIG.DISCOUNT),marketObj(selMarket).currency)}</span>
+          <span class="cp">${srp==null?"\u2014":"From "+fmtMoney(srp*(1-currentBrandDiscount()),marketObj(selMarket).currency)}</span>
           <span class="cs">${stock>0?fmtNum(stock)+" in stock":"Out of stock"}</span>
         </div>
         <button class="btn-expand" data-pid="${p.id}">Sizes &amp; pricing
@@ -610,7 +884,7 @@ function cardHtml(p){
         </button>`:""}
     </div>
     <div class="card-foot">
-      <span class="discount-tag">${Math.round(CONFIG.DISCOUNT*100)}% account price</span>
+      <span class="discount-tag">${Math.round(currentBrandDiscount()*100)}% account price</span>
       <span><span class="lt-label">Line total </span><span class="lt-val" data-lt="${p.id}">${fmtMoney(0,marketObj(selMarket).currency)}</span></span>
     </div>
   </article>`;
@@ -712,7 +986,10 @@ function renderBrandSwitch(){
   });
 }
 function renderCountryRail(){
-  document.getElementById("countryRail").innerHTML=CONFIG.MARKETS.map(m=>
+  const visible = (myProfile && myProfile.role==="staff") || !myMarketAccess.length
+    ? CONFIG.MARKETS
+    : CONFIG.MARKETS.filter(m=>myMarketAccess.some(a=>a.market_id===m.id));
+  document.getElementById("countryRail").innerHTML=visible.map(m=>
     `<button class="country ${m.code===selMarket?"active":""}" data-mkt="${m.code}"><span class="flag">${m.flag}</span>${m.name}<span class="cnt" data-cnt="${m.code}"></span></button>`).join("");
   document.querySelectorAll(".country").forEach(btn=>{
     btn.addEventListener("click",()=>{ selMarket=btn.dataset.mkt; document.querySelectorAll(".country").forEach(x=>x.classList.remove("active")); btn.classList.add("active"); render(); updateMarketCounts(); });
@@ -788,6 +1065,19 @@ function clearSelection(){ for(const k in selection) delete selection[k]; }
 function setStatus(cls,text){ const p=document.getElementById("statusPill"); p.className="status-pill "+(cls||""); document.getElementById("statusText").textContent=text; }
 function showState(kind,title,body){ document.getElementById("grid").innerHTML=`<div class="state ${kind==="error"?"error":""}" style="grid-column:1/-1"><h3>${title}</h3><p>${body}</p></div>`; }
 function renderLoadNotes(notes){ const el=document.getElementById("loadNote"); el.innerHTML=notes.length?`<div class="warn-box">${notes.map(escapeHtml).join("<br>")}</div>`:""; }
+function setCardImg(wrapper,idx){
+  const imgs=JSON.parse(wrapper.dataset.images||"[]");
+  if(!imgs.length) return;
+  idx=((idx%imgs.length)+imgs.length)%imgs.length;
+  const main=wrapper.querySelector(".main-card-photo");
+  if(main){ main.src=imgs[idx]; main.dataset.idx=idx; }
+}
+function stepCardImg(btn,dir){
+  const wrapper=btn.closest(".card-media-wrapper");
+  const main=wrapper.querySelector(".main-card-photo");
+  const cur=main?Number(main.dataset.idx||0):0;
+  setCardImg(wrapper,cur+dir);
+}
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 const SIZE_ORDER={XXS:1,XS:2,S:3,M:4,L:5,XL:6,XXL:7,"2XL":7,XXXL:8,"3XL":8,FREE:98,OS:99,"ONE SIZE":99};
 function sizeOrder(sz){ const k=String(sz).toUpperCase().trim(); if(SIZE_ORDER[k]!==undefined) return SIZE_ORDER[k]; const n=parseFloat(k); return isNaN(n)?50:n; }

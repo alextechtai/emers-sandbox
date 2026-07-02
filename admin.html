@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Emers Sandbox &middot; Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#14161a; --ink-soft:#3a3f47; --muted:#6b7280;
+    --paper:#eef0f3; --surface:#ffffff; --line:#e2e4e8; --line-strong:#cfd3da;
+    --accent:#1f4dff; --accent-ink:#0f2fb0; --price:#e0442b;
+    --ok:#127a3e; --ok-bg:#e6f4ec; --warn:#8a6d1a; --warn-bg:#fbf3d9;
+    --off:#9aa0aa; --off-bg:#f1f2f5;
+    --shadow:0 1px 2px rgba(20,22,26,.05),0 8px 24px rgba(20,22,26,.06);
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:"Inter",system-ui,sans-serif;font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  .mono{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+  a{color:inherit}
+
+  .cmd{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:22px;padding:12px 26px;background:rgba(20,22,26,.96);color:#f4f5f7}
+  .wordmark{display:flex;align-items:center;gap:11px;font-family:"Archivo";font-weight:800;letter-spacing:.14em;font-size:14px;text-transform:uppercase}
+  .wordmark .dot{width:11px;height:11px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(31,77,255,.22)}
+  .wordmark small{font-weight:500;letter-spacing:.18em;color:#8b90a0;font-size:11px}
+  .cmd-right{margin-left:auto;display:flex;align-items:center;gap:16px}
+  .cmd a.back{font-size:12.5px;color:#c3c7d2;text-decoration:none}
+  .cmd a.back:hover{color:#fff}
+  .signout{background:transparent;border:1px solid #3a3f47;color:#c3c7d2;border-radius:8px;padding:7px 12px;font-size:12.5px;cursor:pointer}
+
+  .wrap{max-width:1080px;margin:0 auto;padding:28px 26px 80px}
+  .tabs{display:flex;gap:6px;margin-bottom:22px;border-bottom:1px solid var(--line)}
+  .tabs button{background:transparent;border:none;padding:11px 4px;margin-right:22px;font-family:"Archivo";font-weight:700;font-size:13px;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent}
+  .tabs button.active{color:var(--ink);border-bottom-color:var(--accent)}
+
+  .pane{display:none}
+  .pane.active{display:block}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px;margin-bottom:14px}
+  .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}
+  .card-co{font-family:"Archivo";font-weight:800;font-size:16px}
+  .card-meta{color:var(--muted);font-size:13px;margin-top:3px;line-height:1.5}
+  .badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+  .badge.pending{background:var(--warn-bg);color:var(--warn)}
+  .badge.approved{background:var(--ok-bg);color:var(--ok)}
+  .badge.rejected{background:var(--off-bg);color:var(--off)}
+
+  .section-label{font-family:"Archivo";font-weight:700;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:16px 0 8px}
+  .mkt-grid{display:flex;flex-wrap:wrap;gap:10px}
+  .mkt-chk{display:flex;align-items:center;gap:7px;border:1px solid var(--line-strong);border-radius:9px;padding:7px 11px;font-size:13px;cursor:pointer}
+  .mkt-chk input{margin:0}
+  .mkt-chk .cur{width:64px;padding:4px 6px;border:1px solid var(--line-strong);border-radius:6px;font-size:12px;margin-left:6px}
+
+  .brand-grid{display:flex;flex-wrap:wrap;gap:10px}
+  .brand-row{display:flex;align-items:center;gap:8px;border:1px solid var(--line-strong);border-radius:9px;padding:7px 11px;font-size:13px}
+  .brand-row input{width:60px;padding:4px 6px;border:1px solid var(--line-strong);border-radius:6px;font-size:12px;text-align:right}
+
+  .row-actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+  .btn{border:none;border-radius:9px;padding:9px 16px;font-family:"Archivo";font-weight:700;font-size:12.5px;letter-spacing:.02em;text-transform:uppercase;cursor:pointer}
+  .btn.primary{background:var(--accent);color:#fff}
+  .btn.primary:hover{background:var(--accent-ink)}
+  .btn.ghost{background:transparent;border:1px solid var(--line-strong);color:var(--ink-soft)}
+  .btn.danger{background:transparent;border:1px solid #e2b3ac;color:#b3271c}
+  .save-msg{font-size:12.5px;color:var(--muted);margin-top:8px}
+
+  .empty{color:var(--muted);font-size:13.5px;padding:30px 0;text-align:center}
+
+  .gate{position:fixed;inset:0;z-index:200;background:var(--paper);display:flex;align-items:center;justify-content:center;padding:24px}
+  .gate-card{width:100%;max-width:360px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px 26px}
+  .gate-word{display:flex;align-items:center;gap:11px;font-family:"Archivo";font-weight:800;letter-spacing:.14em;font-size:14px;text-transform:uppercase;margin-bottom:18px}
+  .gate-word .dot{width:11px;height:11px;border-radius:50%;background:var(--accent)}
+  .gate-word small{font-weight:500;letter-spacing:.18em;color:var(--muted);font-size:11px}
+  .gate-copy{color:var(--muted);font-size:13px;line-height:1.5;margin:0 0 16px}
+  .gate-label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:12px}
+  .gate-label input{display:block;width:100%;margin-top:6px;padding:10px 11px;border:1px solid var(--line-strong);border-radius:9px;font-size:14px}
+  .gate-submit{width:100%;padding:11px 0;border:none;border-radius:9px;background:var(--accent);color:#fff;font-family:"Archivo";font-weight:700;font-size:13px;text-transform:uppercase;cursor:pointer}
+  .gate-msg{margin-top:12px;font-size:12.5px;color:var(--muted)}
+  .gate-msg.err{color:#b3271c}
+  .gate-msg.ok{color:var(--ok)}
+</style>
+</head>
+<body>
+
+<div id="authGate" class="gate">
+  <div class="gate-card">
+    <div class="gate-word"><span class="dot"></span>EMERS <small>ADMIN</small></div>
+    <p class="gate-copy">Staff sign in.</p>
+    <label class="gate-label">Email<input type="email" id="loginEmail" placeholder="you@emers.com" /></label>
+    <label class="gate-label">Password<input type="password" id="loginPassword" /></label>
+    <button class="gate-submit" onclick="submitLogin()">Sign in</button>
+    <div class="gate-msg" id="loginMsg"></div>
+  </div>
+</div>
+
+<div id="appRoot" style="display:none">
+<header class="cmd">
+  <div class="wordmark"><span class="dot"></span>EMERS <small>ADMIN</small></div>
+  <div class="cmd-right">
+    <a class="back" href="index.html">&larr; Catalog</a>
+    <button class="signout" onclick="signOutGate()">Sign out</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="tabs">
+    <button class="active" id="tabPending" onclick="switchTab('pending')">Pending applications</button>
+    <button id="tabAccounts" onclick="switchTab('accounts')">Accounts</button>
+  </div>
+
+  <div id="panePending" class="pane active"></div>
+  <div id="paneAccounts" class="pane"></div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const CONFIG = {
+  SUPABASE_URL: "https://qrawstayhwvdebtgvbru.supabase.co",
+  SUPABASE_KEY: "sb_publishable_1UXE6XICF9FaMgPvDjslqQ_AWM_kbuU"
+};
+
+let sb=null, sbSession=null, myProfile=null;
+let MARKETS=[], BRANDS=[], CUSTOMERS=[], MARKET_ACCESS=[], BRAND_DISCOUNTS=[];
+
+document.addEventListener("DOMContentLoaded", boot);
+
+async function boot(){
+  sb = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
+  sb.auth.onAuthStateChange((_evt,session)=>{ sbSession=session; if(session) resolveStaff(); });
+  const {data:{session}} = await sb.auth.getSession();
+  sbSession=session;
+  if(session) await resolveStaff();
+}
+
+async function submitLogin(){
+  const email=document.getElementById("loginEmail").value.trim();
+  const password=document.getElementById("loginPassword").value;
+  if(!email||!password){ gateMsg("Enter your email and password.","err"); return; }
+  gateMsg("Signing in...");
+  const {error}=await sb.auth.signInWithPassword({email,password});
+  if(error){ gateMsg(error.message,"err"); return; }
+  gateMsg("");
+}
+
+function gateMsg(text,cls){
+  const el=document.getElementById("loginMsg");
+  el.textContent=text; el.className="gate-msg"+(cls?" "+cls:"");
+}
+
+async function signOutGate(){
+  await sb.auth.signOut();
+  document.getElementById("appRoot").style.display="none";
+  document.getElementById("authGate").style.display="flex";
+}
+
+async function resolveStaff(){
+  const user=sbSession.user;
+  const {data:profile}=await sb.from("profiles").select("*").eq("id",user.id).maybeSingle();
+  if(!profile || profile.role!=="staff"){
+    gateMsg("This account is not set up as staff. Ask an admin to add a profiles row with role staff for "+user.email+".","err");
+    return;
+  }
+  myProfile=profile;
+  document.getElementById("authGate").style.display="none";
+  document.getElementById("appRoot").style.display="block";
+  await loadAll();
+}
+
+async function loadAll(){
+  const [m,b,c,ma,bd]=await Promise.all([
+    sb.from("markets").select("*"),
+    sb.from("brands").select("*"),
+    sb.from("customers").select("*").order("created_at",{ascending:false}),
+    sb.from("customer_market_access").select("*"),
+    sb.from("customer_brand_discounts").select("*")
+  ]);
+  MARKETS=m.data||[]; BRANDS=b.data||[]; CUSTOMERS=c.data||[];
+  MARKET_ACCESS=ma.data||[]; BRAND_DISCOUNTS=bd.data||[];
+  renderPending(); renderAccounts();
+}
+
+function switchTab(which){
+  document.getElementById("tabPending").classList.toggle("active",which==="pending");
+  document.getElementById("tabAccounts").classList.toggle("active",which==="accounts");
+  document.getElementById("panePending").classList.toggle("active",which==="pending");
+  document.getElementById("paneAccounts").classList.toggle("active",which==="accounts");
+}
+
+function marketAccessFor(custId){
+  return MARKET_ACCESS.filter(a=>a.customer_id===custId);
+}
+function brandDiscountsFor(custId){
+  return BRAND_DISCOUNTS.filter(d=>d.customer_id===custId);
+}
+
+function accountCardHtml(cust, statusLabel){
+  const access=marketAccessFor(cust.id);
+  const discounts=brandDiscountsFor(cust.id);
+  const marketRow=MARKETS.map(m=>{
+    const existing=access.find(a=>a.market_id===m.id);
+    return `<label class="mkt-chk">
+      <input type="checkbox" data-mkt="${m.id}" ${existing?"checked":""}/>
+      ${m.name}
+      <input type="text" class="cur" data-cur="${m.id}" value="${existing?existing.currency:m.currency}" title="Billing currency"/>
+    </label>`;
+  }).join("");
+  const brandRow=BRANDS.map(b=>{
+    const existing=discounts.find(d=>d.brand_id===b.id);
+    return `<div class="brand-row">${b.name}
+      <input type="number" min="0" max="100" step="1" data-brand="${b.id}" value="${existing?existing.discount_percent:0}"/> %
+    </div>`;
+  }).join("");
+
+  return `<div class="card" data-cust="${cust.id}">
+    <div class="card-top">
+      <div>
+        <div class="card-co">${escapeHtml(cust.company||"")}</div>
+        <div class="card-meta">${escapeHtml(cust.name||"")} &middot; ${escapeHtml(cust.contact_email||"")} &middot; ${escapeHtml(cust.phone||"")}</div>
+      </div>
+      <span class="badge ${cust.status}">${statusLabel}</span>
+    </div>
+    <div class="section-label">Market access and billing currency</div>
+    <div class="mkt-grid">${marketRow}</div>
+    <div class="section-label">Discount per brand</div>
+    <div class="brand-grid">${brandRow||'<span class="card-meta">No brands loaded yet.</span>'}</div>
+    <div class="row-actions">
+      ${cust.status==="pending"?`<button class="btn primary" onclick="approveCustomer('${cust.id}')">Approve</button>
+      <button class="btn danger" onclick="rejectCustomer('${cust.id}')">Reject</button>`:""}
+      <button class="btn ghost" onclick="saveCustomer('${cust.id}')">Save permissions</button>
+    </div>
+    <div class="save-msg" id="msg-${cust.id}"></div>
+  </div>`;
+}
+
+function renderPending(){
+  const pending=CUSTOMERS.filter(c=>c.status==="pending");
+  const el=document.getElementById("panePending");
+  el.innerHTML = pending.length
+    ? pending.map(c=>accountCardHtml(c,"Pending")).join("")
+    : '<div class="empty">No pending applications.</div>';
+}
+
+function renderAccounts(){
+  const rest=CUSTOMERS.filter(c=>c.status!=="pending");
+  const el=document.getElementById("paneAccounts");
+  el.innerHTML = rest.length
+    ? rest.map(c=>accountCardHtml(c, c.status==="approved"?"Approved":"Rejected")).join("")
+    : '<div class="empty">No approved or rejected accounts yet.</div>';
+}
+
+async function saveCustomer(custId){
+  const card=document.querySelector(`.card[data-cust="${custId}"]`);
+  const msg=document.getElementById("msg-"+custId);
+  msg.textContent="Saving...";
+
+  const marketWrites=[];
+  card.querySelectorAll(".mkt-chk").forEach(row=>{
+    const chk=row.querySelector("input[type=checkbox]");
+    const cur=row.querySelector("input.cur");
+    if(chk.checked) marketWrites.push({customer_id:custId, market_id:chk.dataset.mkt, currency:cur.value.trim()||"USD"});
+  });
+  const brandWrites=[];
+  card.querySelectorAll(".brand-row input").forEach(inp=>{
+    const pct=Number(inp.value||0);
+    if(pct>0) brandWrites.push({customer_id:custId, brand_id:inp.dataset.brand, discount_percent:pct});
+  });
+
+  const {error:delMktErr}=await sb.from("customer_market_access").delete().eq("customer_id",custId);
+  const {error:delBrandErr}=await sb.from("customer_brand_discounts").delete().eq("customer_id",custId);
+  let insErr=null;
+  if(marketWrites.length){ const r=await sb.from("customer_market_access").insert(marketWrites); insErr=insErr||r.error; }
+  if(brandWrites.length){ const r=await sb.from("customer_brand_discounts").insert(brandWrites); insErr=insErr||r.error; }
+
+  const err=delMktErr||delBrandErr||insErr;
+  if(err){ msg.textContent="Error: "+err.message; msg.style.color="#b3271c"; return; }
+  msg.textContent="Saved."; msg.style.color="var(--ok)";
+  await loadAll();
+}
+
+async function approveCustomer(custId){
+  await saveCustomer(custId);
+  const {error}=await sb.from("customers").update({status:"approved", approved_at:new Date().toISOString()}).eq("id",custId);
+  if(error){ alert(error.message); return; }
+  await loadAll();
+  switchTab("accounts");
+}
+
+async function rejectCustomer(custId){
+  const {error}=await sb.from("customers").update({status:"rejected"}).eq("id",custId);
+  if(error){ alert(error.message); return; }
+  await loadAll();
+}
+
+function escapeHtml(s){ return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+</script>
+</body>
+</html>
