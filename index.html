@@ -101,7 +101,7 @@
   select.filter:focus,input.srp:focus{outline:none;border-color:var(--accent)}
 
   /* SRP dual range slider */
-  .srp-slider{display:flex;align-items:center;gap:12px;padding:9px 16px;border:1px solid var(--line-strong);border-radius:10px;background:var(--surface);min-width:230px}
+  .srp-slider{display:flex;align-items:center;gap:12px;padding:9px 16px;border:1px solid var(--line-strong);border-radius:10px;background:var(--surface);min-width:260px;flex:1 1 260px;max-width:340px}
   .srp-slider .sl-label{font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
   .sl-track-wrap{position:relative;flex:1;height:20px;display:flex;align-items:center}
   .sl-track-bg{position:absolute;left:0;right:0;height:4px;border-radius:99px;background:var(--line-strong)}
@@ -252,6 +252,7 @@
   .gate-copy{color:var(--muted);font-size:13px;line-height:1.5;margin:0 0 16px}
   .gate-label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:12px}
   .gate-label input,.gate-label select{display:block;width:100%;margin-top:6px;padding:10px 11px;border:1px solid var(--line-strong);border-radius:9px;font-family:"Inter";font-size:14px;background:var(--surface);color:var(--ink)}
+  .gate-label input:focus,.gate-label select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(31,77,255,.15)}
   .phone-row{display:flex;gap:6px;margin-top:6px}
   .phone-row select{width:110px;margin-top:0}
   .phone-row input{margin-top:0;flex:1}
@@ -451,6 +452,12 @@ const CONFIG = {
 const CUR_FMT = { USD:{sym:"$",dp:2}, SGD:{sym:"S$",dp:2}, VND:{sym:"\u20AB",dp:0}, THB:{sym:"\u0E3F",dp:2}, PHP:{sym:"\u20B1",dp:2}, JPY:{sym:"\u00A5",dp:0} };
 function fmtMoney(v,cur){ const f=CUR_FMT[cur]||{sym:"",dp:2}; return f.sym+Number(v||0).toLocaleString("en-US",{minimumFractionDigits:f.dp,maximumFractionDigits:f.dp}); }
 function fmtNum(v){ return Number(v||0).toLocaleString("en-US"); }
+function fmtCompact(v){
+  v=Number(v||0);
+  if(v>=1000000) return (v/1000000).toFixed(v%1000000===0?0:1)+"M";
+  if(v>=1000) return (v/1000).toFixed(v%1000===0?0:1)+"k";
+  return String(v);
+}
 
 const pick=(o,keys,dflt=null)=>{ for(const k of keys){ if(o&&o[k]!==undefined&&o[k]!==null&&o[k]!=="") return o[k]; } return dflt; };
 const F={
@@ -624,6 +631,7 @@ async function resolveAccount(){
     document.getElementById("acctName").textContent="Emers staff";
     document.getElementById("acctMeta").textContent="Signed in \u00b7 staff";
     myCustomer=null; myMarketAccess=[]; myBrandDiscounts=[];
+    logLoginEvent(profile.id);
     enterApp();
     return;
   }
@@ -654,7 +662,15 @@ async function resolveAccount(){
 
   document.getElementById("acctName").textContent=cust.company||cust.name;
   document.getElementById("acctMeta").textContent="Signed in \u00b7 wholesale";
+  logLoginEvent(profile.id);
   enterApp();
+}
+
+function logLoginEvent(profileId){
+  // Fire and forget, a failed log write should never block someone from using the app
+  sb.from("login_access_log").insert({profile_id:profileId}).then(({error})=>{
+    if(error) console.warn("Could not record login event:",error.message);
+  });
 }
 
 function enterApp(){
@@ -959,8 +975,10 @@ function updateSrpSliderUi(){
   const pctA=hi>lo?((a-lo)/(hi-lo))*100:0, pctB=hi>lo?((b-lo)/(hi-lo))*100:100;
   document.getElementById("slFill").style.left=pctA+"%";
   document.getElementById("slFill").style.width=Math.max(0,pctB-pctA)+"%";
-  document.getElementById("slMinLbl").textContent=fmtNum(a);
-  document.getElementById("slMaxLbl").textContent=fmtNum(b);
+  document.getElementById("slMinLbl").textContent=fmtCompact(a);
+  document.getElementById("slMaxLbl").textContent=fmtCompact(b);
+  document.getElementById("slMinLbl").title=fmtNum(a);
+  document.getElementById("slMaxLbl").title=fmtNum(b);
 }
 function wireSrpSlider(){
   const rMin=document.getElementById("rangeMin"), rMax=document.getElementById("rangeMax");
